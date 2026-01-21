@@ -1,12 +1,4 @@
 apiVersion: v1
-data:
-  policy.csv: |
-    p, role:devops, applications, *, */*, allow
-    p, role:devops, projects, get, *, allow
-    p, role:devops, clusters, get, *, allow
-
-    g, thang2k6adu, role:devops
-  policy.default: role:readonly
 kind: ConfigMap
 metadata:
   annotations:
@@ -20,4 +12,12 @@ metadata:
   namespace: argocd
   resourceVersion: "37086"
   uid: 6294a1e0-cf96-4fb9-bdb0-ac8bd0b89659
+data:
+  policy.csv: |
+    p, role:devops, applications, *, */*, allow
+    p, role:devops, projects, get, *, allow
+    p, role:devops, clusters, get, *, allow
+
+    g, thang2k6adu, role:devops
+  policy.default: role:readonly
 
