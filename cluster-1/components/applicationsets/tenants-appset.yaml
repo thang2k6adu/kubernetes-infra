@@ -6,7 +6,7 @@ metadata:
 spec:
   generators:
   - git:
-      repoURL: https://github.com/christianh814/example-kubernetes-go-repo
+      repoURL: https://github.com/thang2k6adu/kubernetes-infra
       revision: main
       directories:
       - path: cluster-1/tenants/*
@@ -26,7 +26,7 @@ spec:
             factor: 2
             maxDuration: 5m
       source:
-        repoURL: https://github.com/christianh814/example-kubernetes-go-repo
+        repoURL: https://github.com/thang2k6adu/kubernetes-infra
         targetRevision: main
         path: '{{path}}'
       destination:
