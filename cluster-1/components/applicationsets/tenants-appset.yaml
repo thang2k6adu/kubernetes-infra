@@ -9,7 +9,7 @@ spec:
       repoURL: https://github.com/christianh814/example-kubernetes-go-repo
       revision: main
       directories:
-      - path: cluster-XXXX/tenants/*
+      - path: cluster-1/tenants/*
   template:
     metadata:
       name: '{{path.basename}}'
