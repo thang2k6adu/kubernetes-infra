@@ -9,4 +9,3 @@ helmCharts:
     version: 56.6.0
     releaseName: monitoring
     namespace: monitoring
-    valuesFile: values.yaml
