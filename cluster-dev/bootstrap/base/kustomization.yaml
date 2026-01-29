@@ -10,7 +10,4 @@ resources:
   # - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/ha/install.yaml
 
 patches:
-  - path: patch.yaml
-    target:
-      kind: ConfigMap
-      name: argocd-cm
+  - patch-argocd-cm.yaml
