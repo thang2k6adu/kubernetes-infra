@@ -9,5 +9,4 @@ resources:
   - kubernetes-dashboard-configmap.yaml
   - kubernetes-dashboard-rbac.yaml
   - kubernetes-dashboard-deployment.yaml
-  - kubernetes-dashboard-metrics-service.yaml
   - kubernetes-dashboard-metrics-deployment.yaml
