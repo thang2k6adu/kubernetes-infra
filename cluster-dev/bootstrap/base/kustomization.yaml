@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - argocd-ns.yaml
   # 1GB RAM only (single replica)
+  - patch-argocd-cm.yaml
   - install.yaml
   # - https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
   # For production (multi replicas, Redis HA, minimum 3GB RAM)
