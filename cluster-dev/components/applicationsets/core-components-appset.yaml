@@ -29,5 +29,7 @@ spec:
         repoURL: https://github.com/thang2k6adu/kubernetes-infra
         targetRevision: main
         path: "{{path}}"
+        kustomize:
+          enableHelm: true
       destination:
         server: https://kubernetes.default.svc
