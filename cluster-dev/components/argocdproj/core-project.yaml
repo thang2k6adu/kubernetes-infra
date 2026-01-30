@@ -13,17 +13,14 @@ spec:
     - namespace: "*"
       server: https://kubernetes.default.svc
 
-  # Cho phép tất cả cluster resources
   clusterResourceWhitelist:
     - group: "*"
       kind: "*"
 
-  # Cho phép tất cả namespace resources
   namespaceResourceWhitelist:
     - group: "*"
       kind: "*"
 
-  # Chặn các cluster resource nguy hiểm
   clusterResourceBlacklist:
     - group: ""
       kind: Node
@@ -36,7 +33,6 @@ spec:
     - group: security.openshift.io
       kind: SecurityContextConstraints
 
-  # Chặn các namespace resource nguy hiểm
   namespaceResourceBlacklist:
     - group: ""
       kind: Pod
