@@ -2,11 +2,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - kubernetes-dashboard-ns.yaml
-  - kubernetes-dashboard-sa.yaml
-  - kubernetes-dashboard-service.yaml
-  - kubernetes-dashboard-secrets.yaml
-  - kubernetes-dashboard-configmap.yaml
-  - kubernetes-dashboard-rbac.yaml
-  - kubernetes-dashboard-deployment.yaml
-  - kubernetes-dashboard-metrics-deployment.yaml
+  - dashboard-install.yaml
+  - dashboard-admin.yaml
