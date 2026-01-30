@@ -502,6 +502,11 @@ kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manif
 sau đó bootstrap ArgoCD vào cluster
 kubectl apply -k https://github.com/thang2k6adu/kubernetes-infra/cluster-dev/bootstrap/overlays/default
 
+sau đó có thể chuyển nội dung của install.yaml vào bootstrap.yaml
+
+curl -L -o cluster-dev/bootstrap/base/install.yaml https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/ha/install.yaml
+
+
 Ý nghĩa:
 - tạo namespace argocd
 - cài Argo CD
