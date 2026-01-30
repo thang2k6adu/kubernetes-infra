@@ -10,7 +10,7 @@ spec:
     - https://github.com/thang2k6adu/kubernetes-infra
 
   destinations:
-    - namespace: "tenant-*"
+    - namespace: "*"
       server: https://kubernetes.default.svc
 
   clusterResourceWhitelist:
