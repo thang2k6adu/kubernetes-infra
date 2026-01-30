@@ -4,7 +4,7 @@ metadata:
   name: core
   namespace: argocd
 spec:
-  description: Core infrastructure project
+  description: Core infrastructure project (full access with blacklist)
 
   sourceRepos:
     - https://github.com/thang2k6adu/kubernetes-infra
@@ -13,63 +13,34 @@ spec:
     - namespace: "*"
       server: https://kubernetes.default.svc
 
+  # Cho phép tất cả cluster resources
   clusterResourceWhitelist:
-    - group: ""
-      kind: Namespace
-    - group: apiextensions.k8s.io
-      kind: CustomResourceDefinition
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRole
-    - group: rbac.authorization.k8s.io
-      kind: ClusterRoleBinding
-    - group: admissionregistration.k8s.io
-      kind: MutatingWebhookConfiguration
-    - group: admissionregistration.k8s.io
-      kind: ValidatingWebhookConfiguration
-    - group: networking.k8s.io
-      kind: IngressClass
-
-    - group: argoproj.io
-      kind: AppProject
-    - group: argoproj.io
-      kind: Application
-    - group: argoproj.io
-      kind: ApplicationSet
-
-  namespaceResourceWhitelist:
-    - group: ""
-      kind: Service
-    - group: ""
-      kind: ServiceAccount
-    - group: ""
-      kind: ConfigMap
-    - group: ""
-      kind: Secret
-
-    - group: apps
-      kind: Deployment
-    - group: StatefulSet
-      kind: StatefulSet
-    - group: apps
-      kind: DaemonSet
-
-    - group: batch
-      kind: Job
-    - group: batch
-      kind: CronJob
-
-    - group: rbac.authorization.k8s.io
-      kind: Role
-    - group: rbac.authorization.k8s.io
-      kind: RoleBinding
-
-    - group: policy
-      kind: PodDisruptionBudget
-    - group: autoscaling
-      kind: HorizontalPodAutoscaler
-
-    - group: networking.k8s.io
-      kind: NetworkPolicy
-
-    - group: monitoring.coreos.com
+    - group: "*"
       kind: "*"
+
+  # Cho phép tất cả namespace resources
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+
+  # Chặn các cluster resource nguy hiểm
+  clusterResourceBlacklist:
+    - group: ""
+      kind: Node
+    - group: ""
+      kind: PersistentVolume
+    - group: storage.k8s.io
+      kind: StorageClass
+    - group: policy
+      kind: PodSecurityPolicy
+    - group: security.openshift.io
+      kind: SecurityContextConstraints
+
+  # Chặn các namespace resource nguy hiểm
+  namespaceResourceBlacklist:
+    - group: ""
+      kind: Pod
+    - group: ""
+      kind: ReplicationController
+    - group: ""
+      kind: Endpoints
