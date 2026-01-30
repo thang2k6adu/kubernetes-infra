@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: core
+  namespace: argocd
+spec:
+  description: Core infrastructure project
+  sourceRepos:
+    - https://github.com/thang2k6adu/kubernetes-infra
+
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+    - group: networking.k8s.io
+      kind: IngressClass
+
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: v1
+      kind: Service
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+    - group: policy
+      kind: PodDisruptionBudget

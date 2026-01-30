@@ -14,7 +14,7 @@ spec:
     metadata:
       name: "{{path.basename}}"
     spec:
-      project: default
+      project: core
       syncPolicy:
         syncOptions:
           - ServerSideApply=true

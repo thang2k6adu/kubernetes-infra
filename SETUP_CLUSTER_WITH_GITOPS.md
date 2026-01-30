@@ -487,54 +487,106 @@ curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm version
 ```
 
-## 2️⃣ Cài Kubernetes Dashboard
-```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+bắt đầu setup gitops
+từ repo gốc tạo repo cluster-XXX (VD: Cluster Dev)
+
+sửa cái phần ở
+- core component set
+- tenants app set
+
+sau đó cài ArgoCD trước đã (cài tạm thôi)
+
+kubectl create namespace argocd
+kubectl apply -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+sau đó bootstrap ArgoCD vào cluster
+kubectl apply -k https://github.com/thang2k6adu/kubernetes-infra/cluster-dev/bootstrap/overlays/default
+
+sau đó có thể chuyển nội dung của install.yaml vào bootstrap.yaml
+
+curl -L -o cluster-dev/bootstrap/base/install.yaml https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/ha/install.yaml
+
+
+Ý nghĩa:
+- tạo namespace argocd
+- cài Argo CD
+- tạo ApplicationSet
+- Argo CD bắt đầu tự quản lý chính nó
+- deploy core + tenants
+
+check
+
+This should give you 4 applications
+
+```shell
+$ kubectl get applications -n argocd
+NAME                          SYNC STATUS   HEALTH STATUS
+bgd-blue                      Synced        Healthy
+sample-admin-workload         Synced        Healthy
+myapp                         Synced        Healthy
+gitops-controller             Synced        Healthy
 ```
 
-Check:
-```bash
-kubectl get pods -n kubernetes-dashboard
+Backed by 2 applicationsets
+
+```shell
+$ kubectl get appsets -n argocd
+NAME      AGE
+cluster   110s
+tenants   110s
 ```
 
-## 3️⃣ Tạo ServiceAccount (tài khoản cho service)
+để xem argoCD UI, đầu tiên cần password
 
-Tạo file:
-```bash
-nano ~/k3s-inventory/dashboard-admin.yaml
+```shell
+kubectl get secret/argocd-initial-admin-secret -n argocd -o jsonpath='{.data.password}' | base64 -d ; echo
 ```
 
-Nội dung:
-```yaml
-apiVersion: v1
-kind: ServiceAccount
+sau đấy port forward (dùng `admin` là user names)
+
+```shell
+kubectl -n argocd port-forward --address 0.0.0.0 service/argocd-server 8080:443
+```
+
+cài k8s dashboard
+
+1 application trong gitops sẽ như này (kể cả core hay tenants)
+
+├── kustomization.yaml
+├── namespace.yaml
+├── deployment.yaml
+├── service.yaml
+├── ingress.yaml
+└── configmap.yaml
+
+quy tắc đặt tên
+
+<app-name>-<component>
+
+VD
 metadata:
-  name: kubernetes-dashboard-admin
-  namespace: kubernetes-dashboard
+  name: myapp-deployment
 ---
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
 metadata:
-  name: kubernetes-dashboard-admin
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: kubernetes-dashboard-admin
-  namespace: kubernetes-dashboard
-```
+  name: myapp-service
+---
+metadata:
+  name: myapp-config
+---
+metadata:
+  name: myapp
 
-Apply:
-```bash
-kubectl apply -f ~/k3s-inventory/dashboard-admin.yaml
-```
+copy nguyên cái argo CD trên trang chính về tách ra là xong
+
+giờ check
 
 Check service:
 ```bash
 kubectl get svc -n kubernetes-dashboard
 ```
+
+lấy token login
+kubectl -n kubernetes-dashboard create token kubernetes-dashboard-admin
 
 ## 4️⃣ Mở proxy để truy cập Dashboard
 ```bash
@@ -544,24 +596,10 @@ kubectl proxy --address=0.0.0.0 --accept-hosts='^.*$'
 
 Nếu không mở proxy tại port `8001` thì phải vào `6443` (chắc chắn không vào được).
 
+
 Truy cập Dashboard:
 ```
 http://192.168.0.50:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
-```
-
-Giải thích:
-
-> "API Server, hãy forward request này tới Service kubernetes-dashboard, port tên là https (443), nó là port"
-
-## 5️⃣ Lấy token để login Dashboard
-```bash
-kubectl -n kubernetes-dashboard create token kubernetes-dashboard-admin
-```
-
-## 6️⃣ Nếu SSH thì tạm mở port 8001
-```bash
-sudo ufw allow 8001
-sudo ufw reload
 ```
 
 Sau khi dùng xong thì đóng lại:
@@ -570,67 +608,10 @@ sudo ufw delete allow 8001
 sudo ufw reload
 ```
 
-Tất cả pod ở node nào?
-```bash
-kubectl get pods -A -o wide
-```
+setup ingress
 
-## TEST DEPLOY NGINX + NODE PORT
-```bash
-kubectl create namespace test-nginx
-```
+disable traefik (này làm thủ công, ko gitops được vì là server config)
 
-Lệnh này tạo deployment trên node bất kì (schedule tự chọn tối ưu):
-```bash
-kubectl create deployment nginx \
-  --image=nginx \
-  -n test-nginx
-```
-
-Check:
-```bash
-kubectl get pods -n test-nginx
-```
-
-### Expose
-
-Này giống tạo 1 service port 80, node port bất kì trỏ về nginx. Nó sẽ mở port của tất cả các node.
-
-YAML phải type node port, không là nó về ClusterIP:
-```bash
-kubectl expose deployment nginx \
-  --type=NodePort \
-  --port=80 \
-  -n test-nginx
-```
-
-Check:
-```bash
-kubectl get svc -n test-nginx
-```
-
-Output:
-```
-nginx   NodePort   10.43.7.190   <none>        80:30582/TCP   11s
-```
-
-Vào:
-```
-http://192.168.0.505:30582
-```
-
-### Scale thử
-```bash
-kubectl scale deployment -n test-nginx nginx --replicas=3
-kubectl get pods -n test-nginx -o wide
-```
-
-### Rollback
-```bash
-kubectl delete namespace test-nginx
-```
-
-## SETUP INGRESS (KHÔNG CẦN NODEPORT NỮA)
 
 Ghét traefik nên disable đi:
 ```bash
@@ -662,16 +643,10 @@ fix lỗi 127.0.0.1
 echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> ~/.bashrc
 source ~/.bashrc
 
-### Trước khi cài nginx, cài monitoring
-```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
+setup monitoring (cái dưới đây chạy thay cho helm, từ lần sau, cái nào mà chạy helm thì cứ application mà giã)
 
-kubectl create namespace monitoring
 
-helm install monitoring prometheus-community/kube-prometheus-stack \
-  -n monitoring
-```
+thêm cái configmap cho argoCD để dùng helm chart trong kustomization
 
 Check:
 ```bash
@@ -686,212 +661,9 @@ alertmanager-...
 node-exporter-...
 ```
 
-### Cài nginx
-```bash
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
-```
+kubectl -n argocd port-forward --address 0.0.0.0 service/argocd-server 8080:443
 
-Cái này cho reverse proxy, còn cloud có LB sẵn nên là khác:
-```bash
-mkdir -p ~/k3s-inventory/nginx-ingress-config
-nano ~/k3s-inventory/nginx-ingress-config/values.yaml
-```
+tiếp tạo thêm cái values cho ingress nginx
 
-Nội dung:
-```yaml
-controller:
-  replicaCount: 2
 
-  ingressClassResource:
-    enabled: true
-    default: true
-    name: nginx
-
-  kind: Deployment
-
-  service:
-    enabled: true
-    type: NodePort
-    externalTrafficPolicy: Local
-    ports:
-      http: 80
-      https: 443
-    nodePorts:
-      http: 30080
-      https: 30443
-
-  resources:
-    requests:
-      cpu: 200m
-      memory: 256Mi
-
-  autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 60
-
-  config:
-    use-forwarded-headers: "true"
-    proxy-real-ip-cidr: "0.0.0.0/0"
-    real-ip-header: "X-Forwarded-For"
-    proxy-body-size: "50m"
-    proxy-read-timeout: "600"
-    proxy-send-timeout: "600"
-    worker-shutdown-timeout: "240s"
-    enable-underscores-in-headers: "true"
-
-  allowSnippetAnnotations: false
-
-  metrics:
-    enabled: true
-    service:
-      enabled: true
-    serviceMonitor:
-      enabled: true
-
-  podDisruptionBudget:
-    enabled: true
-    minAvailable: 1
-
-  affinity:
-    podAntiAffinity:
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 100
-          podAffinityTerm:
-            labelSelector:
-              matchExpressions:
-                - key: app.kubernetes.io/component
-                  operator: In
-                  values:
-                    - controller
-            topologyKey: kubernetes.io/hostname
-
-  terminationGracePeriodSeconds: 300
-
-  lifecycle:
-    preStop:
-      exec:
-        command:
-          - /wait-shutdown
-
-defaultBackend:
-  enabled: true
-```
-
-Install:
-```bash
-kubectl create namespace ingress-nginx
-helm install ingress-nginx ingress-nginx/ingress-nginx \
-  -n ingress-nginx \
-  -f ~/k3s-inventory/nginx-ingress-config/values.yaml
-```
-
-Nếu lỗi:
-```bash
-helm uninstall ingress-nginx -n ingress-nginx
-kubectl delete namespace ingress-nginx
-```
-
-Check:
-```bash
-kubectl get pods -n ingress-nginx -o wide
-kubectl get svc -n ingress-nginx
-```
-
-### Làm lại như cũ, khác là service lúc này là Cluster IP chứ không dùng node port
-```bash
-kubectl create namespace test-nginx
-
-kubectl create deployment nginx \
-  --image=nginx \
-  -n test-nginx
-```
-
-Khác nè (không ghi type thì là ClusterIP), không name thì cùng tên với deployment. Không định nghĩa target port thì tự lấy trong deployment:
-```bash
-kubectl expose deployment nginx \
-  --port=80 \
-  --target-port=80 \
-  -n test-nginx
-```
-```bash
-kubectl get svc -n test-nginx
-```
-```bash
-mkdir ~/k8s-manifest
-nano ~/k8s-manifest/nginx-ingress.yaml
-```
-
-Prefix sẽ match với tất cả:
-```
-http://nginx.local/
-http://nginx.local/abc
-http://nginx.local/api
-http://nginx.local/test/123
-```
-
-Đều vào nginx hết:
-```yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: nginx-ingress
-  namespace: test-nginx
-spec:
-  rules:
-  - host: kruzetech.dev
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: nginx
-            port:
-              number: 80
-```
-```bash
-kubectl apply -f ~/k8s-manifest/nginx-ingress.yaml
-```
-
-Check:
-```bash
-kubectl get ingress -n test-nginx
-```
-
-### Map domain vào DNS ở host
-
-Ví dụ Windows, còn Linux khá dễ thôi.
-
-Chạy PowerShell bằng admin:
-```powershell
-notepad C:\Windows\System32\drivers\etc\hosts
-```
-
-Thêm vào:
-```
-192.168.0.505 nginx.local
-```
-
-(Lưu ý là chỉ node nào có pod mới được)
-
-Flush DNS (xóa cache):
-```powershell
-ipconfig /flushdns
-```
-
-Ping thử phát:
-```powershell
-ping nginx.local
-```
-```bash
-sudo ufw allow 80
-sudo ufw allow 443
-```
-
-Vào:
-```
-http://nginx.local
-```
+tạo name space

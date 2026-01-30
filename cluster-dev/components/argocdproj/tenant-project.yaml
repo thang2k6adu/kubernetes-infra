@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: tenant
+  namespace: argocd
+spec:
+  description: Tenant application project
+
+  sourceRepos:
+    - https://github.com/thang2k6adu/kubernetes-infra
+
+  destinations:
+    - namespace: "tenant-*"
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist: []
+
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet
+    - group: batch
+      kind: Job
+    - group: batch
+      kind: CronJob
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Secret
+    - group: networking.k8s.io
+      kind: Ingress
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+    - group: policy
+      kind: PodDisruptionBudget
