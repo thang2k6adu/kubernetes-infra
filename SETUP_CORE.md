@@ -589,7 +589,7 @@ Phù hợp với kube-prometheus-stack
 - Tránh downtime khi node drain / upgrade
 
 ### 2.9. Affinity (chống dồn pod 1 node)
-
+~
 ```yaml
   affinity:
     podAntiAffinity:
