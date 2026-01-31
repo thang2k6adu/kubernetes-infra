@@ -261,3 +261,7 @@ rbac:
     # - apiGroups: [""]
     #   resources: ["configmaps"]
     #   verbs: ["get", "list"]
+
+
+httpRoute:
+  enabled: false
