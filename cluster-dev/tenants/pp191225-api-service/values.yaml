@@ -202,7 +202,7 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - '{{ include "chart.fullname" . }}'
+                  - dev-pp191225-api-service
           topologyKey: kubernetes.io/hostname
 
 # Khai báo Prometheus ServiceMonitor, dùng với Prometheus Operator, để tự động cấu hình scrape và lấy metrics
@@ -261,7 +261,6 @@ rbac:
     # - apiGroups: [""]
     #   resources: ["configmaps"]
     #   verbs: ["get", "list"]
-
 
 httpRoute:
   enabled: false
