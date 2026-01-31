@@ -18,6 +18,8 @@ spec:
       kind: Namespace
 
   namespaceResourceWhitelist:
+    - group: ""
+      kind: ServiceAccount
     - group: apps
       kind: Deployment
     - group: apps
