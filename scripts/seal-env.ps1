@@ -1,5 +1,6 @@
 param(
   [string]$Namespace,
+  [string]$ConfigMapName,
   [string]$SecretName,
   [string]$CertPath
 )
@@ -22,7 +23,7 @@ $secretData = @()
 $configData = @()
 
 foreach ($line in $envLines) {
-  $key, $value = $line -split "=",2
+  $key, $value = $line -split "=", 2
   if ($whitelist -contains $key) {
     $secretData += "$key=$value"
   } else {
@@ -33,9 +34,13 @@ foreach ($line in $envLines) {
 $configData | Out-File config.env -Encoding utf8
 $secretData | Out-File secret.env -Encoding utf8
 
-kubectl create configmap app-config --from-env-file=config.env -n $Namespace --dry-run=client -o yaml > configmap.yaml
+# Tạo ConfigMap với tên truyền vào
+kubectl create configmap $ConfigMapName --from-env-file=config.env -n $Namespace --dry-run=client -o yaml > configmap.yaml
+
+# Tạo Secret với tên truyền vào
 kubectl create secret generic $SecretName --from-env-file=secret.env -n $Namespace --dry-run=client -o yaml > secret.yaml
 
+# Seal secret
 Get-Content secret.yaml | kubeseal --cert $CertPath --namespace $Namespace --format yaml > sealed-secret.yaml
 
 Remove-Item config.env, secret.env, secret.yaml -Force -ErrorAction SilentlyContinue
@@ -66,3 +71,5 @@ else {
 $lines | Set-Content $KustomizationFile -Encoding utf8
 
 Write-Host "Done. Generated configmap.yaml and sealed-secret.yaml"
+Write-Host "ConfigMap name: $ConfigMapName"
+Write-Host "Secret name: $SecretName"

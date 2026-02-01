@@ -1,12 +1,18 @@
 #!/bin/bash
 
 NAMESPACE=$1
-SECRET_NAME=$2
-CERT_PATH=$3
+CONFIGMAP_NAME=$2
+SECRET_NAME=$3
+CERT_PATH=$4
 
 ENV_FILE=".env"
 WHITELIST="secrets.whitelist"
 KUSTOMIZATION="kustomization.yaml"
+
+if [ -z "$NAMESPACE" ] || [ -z "$CONFIGMAP_NAME" ] || [ -z "$SECRET_NAME" ] || [ -z "$CERT_PATH" ]; then
+  echo "Usage: $0 <namespace> <configmap-name> <secret-name> <cert-path>"
+  exit 1
+fi
 
 if [ ! -f "$ENV_FILE" ]; then echo ".env not found"; exit 1; fi
 if [ ! -f "$WHITELIST" ]; then echo "secrets.whitelist not found"; exit 1; fi
@@ -26,11 +32,13 @@ while IFS='=' read -r key value; do
   fi
 done < all.env
 
-kubectl create configmap app-config \
+# Tạo ConfigMap với tên truyền vào
+kubectl create configmap "$CONFIGMAP_NAME" \
   --from-env-file=config.env \
   -n "$NAMESPACE" \
   --dry-run=client -o yaml > configmap.yaml
 
+# Tạo Secret với tên truyền vào
 kubectl create secret generic "$SECRET_NAME" \
   --from-env-file=secret.env \
   -n "$NAMESPACE" \
@@ -63,4 +71,6 @@ else
   fi
 fi
 
-echo "Done. Generated configmap.yaml and sealed-secret.yaml"
+echo "Done."
+echo "ConfigMap: $CONFIGMAP_NAME"
+echo "Secret: $SECRET_NAME"
