@@ -1,7 +1,7 @@
 image:
   repository: ghcr.io/thang2k6adu/pp191225-be/be
   pullPolicy: Always # Always cho :latest tag (dev), IfNotPresent cho versioned tags
-  tag: "develop" # Mặc định dùng Chart.appVersion, override khi deploy
+  tag: "91776ad92b4761c49707ecfc81efb42e196e6528" # Mặc định dùng Chart.appVersion, override khi deploy
 
 imagePullSecrets: []
 # - name: registry-secret  # Uncomment nếu dùng private registry
