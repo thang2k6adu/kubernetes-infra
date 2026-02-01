@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubernetes-dashboard
+  namespace: kubernetes-dashboard
+spec:
+  template:
+    spec:
+      nodeSelector:
+        node-role: worker
+      # tolerations:
+      #   - key: "node-role"
+      #     operator: "Equal"
+      #     value: "worker"
+      #     effect: "NoSchedule"
