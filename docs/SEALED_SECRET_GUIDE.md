@@ -63,3 +63,4 @@ Remove-Item sealed-secret.yaml, configmap.yaml -Force
 cd ../../..
 
 tương ứng với 1 tenants sẽ có 1 .env và 1 secrets.whitelist, phải tự tạo nhé
+trong env ko được viết ngoặc kép
