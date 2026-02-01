@@ -47,6 +47,7 @@ VD
 chmod +x seal-env.sh
 cd cluster-dev/tenants/pp191225-api-service
 ../../../../seal-env.sh pp191225-api pp191225-secret ~/sealed-secrets/pub-cert.pem
+cd ../../..
 
 
 window (powershell thường cấm chạy script, nhớ mở)
