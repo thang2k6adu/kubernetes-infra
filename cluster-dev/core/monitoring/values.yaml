@@ -9,6 +9,10 @@ global:
                 operator: In
                 values:
                   - worker
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
 
 grafana:
   enabled: false
