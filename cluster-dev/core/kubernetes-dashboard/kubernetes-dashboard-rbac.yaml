@@ -1,61 +1,11 @@
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: dashboard-admin
-rules:
-  # Core resources
-  - apiGroups: [""]
-    resources:
-      - pods
-      - pods/log
-      - services
-      - services/proxy
-      - namespaces
-      - configmaps
-      - secrets
-      - persistentvolumeclaims
-      - events
-      - endpoints
-      - nodes
-    verbs: ["get", "list", "watch", "create", "update", "delete"]
-
-  # Workloads
-  - apiGroups: ["apps"]
-    resources:
-      - deployments
-      - replicasets
-      - statefulsets
-      - daemonsets
-    verbs: ["get", "list", "watch", "create", "update", "delete"]
-
-  # Batch jobs
-  - apiGroups: ["batch"]
-    resources:
-      - jobs
-      - cronjobs
-    verbs: ["get", "list", "watch", "create", "update", "delete"]
-
-  # Networking
-  - apiGroups: ["networking.k8s.io"]
-    resources:
-      - ingresses
-    verbs: ["get", "list", "watch", "create", "update", "delete"]
-
-  # Metrics
-  - apiGroups: ["metrics.k8s.io"]
-    resources:
-      - pods
-      - nodes
-    verbs: ["get", "list", "watch"]
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kubernetes-dashboard-admin
+  name: kubernetes-dashboard-cluster-admin
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: dashboard-admin
+  name: cluster-admin
 subjects:
   - kind: ServiceAccount
     name: kubernetes-dashboard-admin
