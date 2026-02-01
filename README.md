@@ -129,3 +129,10 @@ Access the UI at: https://192.168.0.50:8080
 ```shell
 sudo ufw delete allow 8080
 ```
+**Mở rộng ổ đĩa (fix err with auto install (just 50% disk)):**
+
+```shell
+sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
+sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
+```
+
