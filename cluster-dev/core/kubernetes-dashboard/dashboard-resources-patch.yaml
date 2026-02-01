@@ -5,9 +5,9 @@ metadata:
   namespace: kubernetes-dashboard
 spec:
   template:
-    # metadata:
-    #   labels:
-    #     k8s-app: kubernetes-dashboard
+    metadata:
+      labels:
+        k8s-app: kubernetes-dashboard
     spec:
       serviceAccountName: kubernetes-dashboard-admin
       affinity:

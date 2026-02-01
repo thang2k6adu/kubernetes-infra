@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kubernetes-dashboard
-  namespace: kubernetes-dashboard
+  name: argocd-server
+  namespace: argocd
 spec:
   template:
     spec:

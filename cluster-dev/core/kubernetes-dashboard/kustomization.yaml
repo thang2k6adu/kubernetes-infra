@@ -6,9 +6,5 @@ resources:
   - kubernetes-dashboard-sa.yaml
   - kubernetes-dashboard-rbac.yaml
 
-patches:
-  - path: dashboard-resources-patch.yaml
-    target:
-      kind: Deployment
-      name: kubernetes-dashboard
-      namespace: kubernetes-dashboard
+patchesStrategicMerge:
+  - dashboard-resources-patch.yaml
