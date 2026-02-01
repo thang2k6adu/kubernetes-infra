@@ -59,5 +59,6 @@ VD
 cd cluster-dev/tenants/pp191225-api-service
 Remove-Item sealed-secret.yaml, configmap.yaml -Force
 ..\..\..\seal-env.ps1 pp191225-api pp191225-secret ~\sealed-secrets\pub-cert.pem
+cd ../../..
 
 tương ứng với 1 tenants sẽ có 1 .env và 1 secrets.whitelist, phải tự tạo nhé
