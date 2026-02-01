@@ -18,6 +18,8 @@ spec:
       kind: Namespace
 
   namespaceResourceWhitelist:
+    - group: bitnami.com
+      kind: SealedSecret
     - group: ""
       kind: ServiceAccount
     - group: apps
