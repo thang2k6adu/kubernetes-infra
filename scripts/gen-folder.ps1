@@ -61,7 +61,7 @@ resources:
   - namespace.yaml
 
 helmCharts:
-  - name: $releaseName-$name
+  - name: $name
     repo: $chartRepo
     version: 0.1.0
     releaseName: $releaseName
