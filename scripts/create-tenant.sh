@@ -122,12 +122,14 @@ ReadClusterConfig() {
   # Use yq to extract directory structure
   local servicesPath=$(yq '.directoryStructure.servicesPath // "services"' "$configFile")
   local tenantsPath=$(yq '.directoryStructure.tenantsPath // "tenants"' "$configFile")
+  local certPath=$(yq '.directoryStructure.certPath // "pub-cert.pem"' "$configFile")
   
   # Remove quotes if present
   servicesPath="${servicesPath//\"/}"
   tenantsPath="${tenantsPath//\"/}"
+  certPath="${certPath//\"/}"
   
-  echo "$servicesPath:$tenantsPath"
+  echo "$servicesPath:$tenantsPath:$certPath"
 }
 
 clear
@@ -193,14 +195,16 @@ echo "Cluster directory validated: $clusterPath"
 WriteSection "Reading Cluster Configuration"
 
 configResult=$(ReadClusterConfig "$clusterPath") || exit 1
-IFS=':' read -r clusterServicesPath clusterTenantsPath <<< "$configResult"
+IFS=':' read -r clusterServicesPath clusterTenantsPath clusterCertPath <<< "$configResult"
 
 # Build full paths
 clusterServicesFullPath="$clusterPath/$clusterServicesPath"
 clusterTenantsFullPath="$clusterPath/$clusterTenantsPath"
+clusterCertFullPath="$clusterPath/$clusterCertPath"
 
 echo "Cluster services path: $clusterServicesFullPath"
 echo "Cluster tenants path: $clusterTenantsFullPath"
+echo "Cluster certificate path: $clusterCertFullPath"
 
 WriteSection "Step 4/7: Service Selection"
 
@@ -294,12 +298,20 @@ done
 WriteSection "Step 6/7: Certificate Selection"
 
 if [[ -z "$CertPath" ]]; then
-  CertPath=$(GetCertificateFile "$rootDir")
+  # Use certificate from cluster config
+  if [[ -f "$clusterCertFullPath" ]]; then
+    CertPath="$clusterCertFullPath"
+  else
+    echo "Certificate file not found: $clusterCertFullPath"
+    echo "Please check cluster configuration in $clusterPath/cluster-config.yaml"
+    echo "or specify certificate with --CertPath parameter."
+    exit 1
+  fi
 else
   [[ -f "$CertPath" ]] || { echo "Certificate file not found: $CertPath"; exit 1; }
-  CertPath=$(realpath "$CertPath")
 fi
 
+CertPath=$(realpath "$CertPath")
 echo "Using certificate: $CertPath"
 
 WriteSection "Step 7/7: Deployment Execution"
@@ -354,7 +366,6 @@ echo "[3/3] Sealing environment variables with kubeseal..."
   --CertPath "$CertPath" \
   --RootDir "$rootDir" \
   --ClusterName "$ClusterName" \
-  --TenantsPath "$clusterTenantsPath" \
   --ProjectName "$ProjectName" || { cd "$originalLocation"; exit 1; }
 echo "Secrets sealed successfully"
 

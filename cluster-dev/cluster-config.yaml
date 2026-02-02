@@ -1,3 +1,4 @@
 directoryStructure:
   servicesPath: "services"
   tenantsPath: "tenants"
+  certPath: "pub-cert.pem"

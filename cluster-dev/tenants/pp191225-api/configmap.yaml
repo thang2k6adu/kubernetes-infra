@@ -8,6 +8,7 @@ data:
   CLOUDINARY_CLOUD_NAME: ""
   ELASTICSEARCH_NODE: http://localhost:9200
   FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@pp191225-53185.iam.gserviceaccount.com
+  FIREBASE_PROJECT_ID: pp191225-53185
   JWT_EXPIRES_IN: 2h
   JWT_REFRESH_EXPIRES_IN: 7d
   MAIL_FROM: noreply@example.com
