@@ -25,10 +25,12 @@ $svc = Get-Content $serviceFile -Raw | ConvertFrom-Yaml
 if (-not $svc.service.name) { Write-Error "Missing service.name"; exit 1 }
 if (-not $svc.service.releaseName) { Write-Error "Missing service.releaseName"; exit 1 }
 if (-not $svc.service.chartRepo) { Write-Error "Missing service.chartRepo"; exit 1 }
+if (-not $svc.service.chartName) { Write-Error "Missing service.chartName"; exit 1 }
 
 $name = $svc.service.name
 $releaseName = $svc.service.releaseName
 $chartRepo = $svc.service.chartRepo
+$chartName = $svc.service.chartName
 
 # ===== rootDir = go up from services/<project> to repo root =====
 $rootDir = Resolve-Path (Join-Path $baseDir "..\..")
@@ -61,7 +63,7 @@ resources:
   - namespace.yaml
 
 helmCharts:
-  - name: $name
+  - name: $chartName
     repo: $chartRepo
     version: 0.1.0
     releaseName: $releaseName

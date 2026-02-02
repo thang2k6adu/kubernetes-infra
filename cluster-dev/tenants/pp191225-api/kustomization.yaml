@@ -9,7 +9,7 @@ resources:
   - namespace.yaml
 
 helmCharts:
-  - name: pp191225-api
+  - name: backend-service-chart
     repo: https://thang2k6adu.github.io/backend-service-charts
     version: 0.1.0
     releaseName: dev

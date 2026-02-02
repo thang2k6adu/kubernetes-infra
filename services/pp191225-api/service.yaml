@@ -1,6 +1,7 @@
 service:
   name: pp191225-api
   releaseName: dev
+  chartName: backend-service-chart
   chartRepo: https://thang2k6adu.github.io/backend-service-charts
   # -> nó sẽ thành dev-pp191225-api trong k8s deployment
   # namespace sẽ tự động = service.name
