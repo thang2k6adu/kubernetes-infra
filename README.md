@@ -136,13 +136,84 @@ sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
 sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
 ```
 
-tạo 1 tenants
+# Creating a New Tenant/Service
 
-window
+## Prerequisites
 
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-.\scripts\create-service.ps1
+Before creating a new tenant, ensure your cluster has:
 
-chmod +x scripts/gen-folder.sh scripts/gen-values.sh scripts/seal-env.sh scripts/create-service.sh
+1. cluster-{name}/services/
+2. cluster-config.yaml
+3. pub-cert.pem
 
-scripts/create-service.sh
+## Step-by-Step Process
+
+### Step 1: Create Service Configuration
+
+Navigate to your cluster's services directory and create a new service folder:
+
+```bash
+# Navigate to your cluster directory
+cd cluster-dev/services/
+
+# Create a new service directory (e.g., pp191225-api)
+mkdir pp191225-api
+cd pp191225-api
+```
+
+### Step 2: Create Required Files
+
+Create the following three files in your service directory:
+
+**1. `service.yaml`** (copy from example):
+```bash
+cp ../../../service-example.yaml service.yaml
+# Edit service.yaml with your service details
+```
+
+**2. `.env`** (environment variables):
+```bash
+# Create .env file with your environment variables
+cat > .env << EOF
+DATABASE_URL=postgresql://user:pass@db:5432/mydb
+REDIS_HOST=redis-service
+LOG_LEVEL=info
+API_KEY=supersecretkey
+OTHER_CONFIG=value
+EOF
+```
+
+**3. `secrets.whitelist`** (secrets to encrypt):
+```bash
+# Create secrets.whitelist file listing variables to encrypt
+cat > secrets.whitelist << EOF
+DATABASE_URL
+API_KEY
+EOF
+```
+
+### Step 3: Configure Service Details
+
+Edit `service.yaml` to match your service:
+
+```yaml
+service:
+  name: "pp191225-api"        # Must match directory name
+  template: "v1"              # Template version to use
+  replicaCount: 2
+  image:
+    repository: "your-registry/pp191225-api"
+    tag: "latest"
+  # Add any other service-specific configurations
+```
+
+### Step 4: Run Deployment Script
+
+From the repository root, run the deployment script:
+
+```bash
+# Interactive mode (follow prompts)
+./scripts/deploy-service.sh
+```
+
+### Step 5: Verify and Commit
