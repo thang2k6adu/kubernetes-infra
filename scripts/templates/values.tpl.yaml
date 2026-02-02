@@ -1,17 +1,17 @@
-﻿# Helm values for pp191225-api
+# Helm values for {{SERVICE_NAME}}
 # Generated from service.yaml configuration
 
 image:
-  repository: ghcr.io/thang2k6adu/pp191225-be/be
-  pullPolicy: Always
-  tag: "91776ad92b4761c49707ecfc81efb42e196e6528"
+  repository: {{IMAGE_REPO}}
+  pullPolicy: {{IMAGE_PULL_POLICY}}
+  tag: "{{IMAGE_TAG}}"
 
 imagePullSecrets: []
 
-nameOverride: "pp191225-api"
+nameOverride: "{{SERVICE_NAME}}"
 fullnameOverride: ""
 
-replicaCount: 2
+replicaCount: {{REPLICAS}}
 
 strategy:
   type: RollingUpdate
@@ -46,8 +46,8 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 3000
-  targetPort: 3000
+  port: {{PORT}}
+  targetPort: {{PORT}}
   annotations: {}
 
 ingress:
@@ -55,23 +55,23 @@ ingress:
   className: "nginx"
   annotations: {}
   hosts:
-    - host: pp191225.api.thang2k6adu.com
+    - host: {{DOMAIN}}
       paths:
         - path: /
           pathType: Prefix
 
 resources:
   requests:
-    cpu: "200m"
-    memory: "256Mi"
+    cpu: "{{CPU_REQUEST}}"
+    memory: "{{MEM_REQUEST}}"
   limits:
-    cpu: "1000m"
-    memory: "512Mi"
+    cpu: "{{CPU_LIMIT}}"
+    memory: "{{MEM_LIMIT}}"
 
 livenessProbe:
   httpGet:
-    path: /api/health
-    port: 3000
+    path: {{LIVENESS_PATH}}
+    port: {{PORT}}
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
@@ -80,8 +80,8 @@ livenessProbe:
 
 readinessProbe:
   httpGet:
-    path: /api/health
-    port: 3000
+    path: {{READINESS_PATH}}
+    port: {{PORT}}
   initialDelaySeconds: 10
   periodSeconds: 5
   timeoutSeconds: 3
@@ -90,8 +90,8 @@ readinessProbe:
 
 startupProbe:
   httpGet:
-    path: /api/health
-    port: 3000
+    path: {{STARTUP_PATH}}
+    port: {{PORT}}
   initialDelaySeconds: 0
   periodSeconds: 10
   timeoutSeconds: 3
@@ -99,17 +99,17 @@ startupProbe:
   failureThreshold: 30
 
 autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 70
-  targetMemoryUtilizationPercentage: 80
+  enabled: {{AUTOSCALING_ENABLED}}
+  minReplicas: {{MIN_REPLICAS}}
+  maxReplicas: {{MAX_REPLICAS}}
+  targetCPUUtilizationPercentage: {{CPU_TARGET}}
+  targetMemoryUtilizationPercentage: {{MEM_TARGET}}
 
 envFrom:
   - configMapRef:
-      name: pp191225-config
+      name: {{CONFIGMAP_NAME}}
   - secretRef:
-      name: pp191225-secret
+      name: {{SECRET_NAME}}
 
 configMap:
   enabled: false
@@ -132,11 +132,11 @@ volumeMounts:
     mountPath: /app/cache
 
 persistence:
-  enabled: false
+  enabled: {{PERSISTENCE_ENABLED}}
   storageClass: ""
   accessMode: ReadWriteOnce
-  size: 1Gi
-  mountPath: /app/data
+  size: {{PERSISTENCE_SIZE}}
+  mountPath: {{PERSISTENCE_PATH}}
   annotations: {}
 
 podDisruptionBudget:
@@ -156,7 +156,7 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - pp191225-api
+                  - {{SERVICE_NAME}}
           topologyKey: kubernetes.io/hostname
 
 serviceMonitor:
@@ -195,4 +195,3 @@ rbac:
 
 httpRoute:
   enabled: false
-
