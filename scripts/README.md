@@ -293,7 +293,7 @@ cluster-xxx/
 
 ---
 
-# 🎯 Tổng kết ngắn gọn (pipeline)
+# Tổng kết ngắn gọn (pipeline)
 
 ```
 STEP 1: Check tools

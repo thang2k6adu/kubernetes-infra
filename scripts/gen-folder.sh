@@ -2,22 +2,21 @@
 
 set -euo pipefail
 
-# Parse parameters
 ClusterName=""
 TenantsPath="tenants"  # Default value
 RootDir=""
+TemplateName="v1"  
 TEMPLATE_DIR="${TEMPLATE_DIR:-}"
 CLUSTER_ROOT_SEARCH_PATHS="${CLUSTER_ROOT_SEARCH_PATHS:-}"
 
-# Parse command line arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
     --ClusterName) ClusterName="$2"; shift 2 ;;
     --TenantsPath) TenantsPath="$2"; shift 2 ;;
     --RootDir) RootDir="$2"; shift 2 ;;
     --ProjectName) ProjectName="$2"; shift 2 ;;
+    --TemplateName) TemplateName="$2"; shift 2 ;;
     *) 
-      # Handle positional arguments for backward compatibility
       if [[ -z "$ClusterName" ]]; then
         ClusterName="$1"
         shift
@@ -27,6 +26,9 @@ while [[ $# -gt 0 ]]; do
       elif [[ -z "$RootDir" ]]; then
         RootDir="$1"
         shift
+      elif [[ "$TemplateName" == "v1" ]]; then
+        TemplateName="$1"
+        shift
       else
         echo "Unknown parameter: $1"
         exit 1
@@ -35,7 +37,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Backward compatibility: handle positional arguments if still empty
 if [[ -z "$ClusterName" && $# -gt 0 ]]; then
   ClusterName="$1"
   shift
@@ -50,6 +51,10 @@ if [[ -z "$RootDir" && $# -gt 0 ]]; then
   RootDir="$1"
 fi
 
+if [[ "$TemplateName" == "v1" && $# -gt 0 ]]; then
+  TemplateName="$1"
+fi
+
 trap 'echo "Failed to generate folder structure"; exit 1' ERR
 
 if [[ -z "$ClusterName" ]]; then
@@ -61,6 +66,7 @@ echo "Using TenantsPath: $TenantsPath"
 if [[ -n "$RootDir" ]]; then
     echo "Using RootDir: $RootDir"
 fi
+echo "Using Template: $TemplateName"
 
 baseDir="$(pwd)"
 serviceFile="$baseDir/service.yaml"
@@ -93,7 +99,6 @@ validate_field "releaseName" "$releaseName" || exit 1
 validate_field "chartRepo" "$chartRepo" || exit 1
 validate_field "chartName" "$chartName" || exit 1
 
-# Sử dụng RootDir nếu được cung cấp, nếu không thì tìm
 if [[ -n "$RootDir" ]]; then
     if [[ ! -d "$RootDir" ]]; then
         echo "Root directory not found: $RootDir"
@@ -153,41 +158,55 @@ else
     fi
 fi
 
-# Use TenantsPath instead of hardcoded "tenants"
 serviceDir="$clusterPath/$TenantsPath/$name"
 mkdir -p "$serviceDir"
 
 scriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [[ -z "$TEMPLATE_DIR" ]]; then
-    templateDir="$scriptDir/templates"
+    templatesRoot="$scriptDir/../templates"
+    if [[ ! -d "$templatesRoot" ]]; then
+        echo "Templates root directory not found: $templatesRoot"
+        exit 1
+    fi
+    
+    if [[ ! -d "$templatesRoot/$TemplateName" ]]; then
+        echo "Template '$TemplateName' not found in $templatesRoot"
+        echo "Available templates:"
+        find "$templatesRoot" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;
+        exit 1
+    fi
+    
+    templateDir="$templatesRoot/$TemplateName"
+    echo "Using template from: $templateDir"
 else
     templateDir="$TEMPLATE_DIR"
 fi
 
-namespaceTplFile="namespace.tpl.yaml"
-kustomizeTplFile="kustomization.tpl.yaml"
+echo "Looking for template files in: $templateDir"
 
-namespaceTplPath="$templateDir/$namespaceTplFile"
-kustomizeTplPath="$templateDir/$kustomizeTplFile"
+templateFiles=()
+while IFS= read -r -d $'\0' file; do
+    templateFiles+=("$(basename "$file")")
+done < <(find "$templateDir" -name "*.tpl.yaml" -type f -print0 2>/dev/null)
 
-if [[ ! -d "$templateDir" ]]; then
-    echo "Templates folder not found: $templateDir"
+if [[ ${#templateFiles[@]} -eq 0 ]]; then
+    echo "No .tpl.yaml files found in template directory: $templateDir"
+    echo "Expected at least: namespace.tpl.yaml and kustomization.tpl.yaml"
     exit 1
 fi
 
-if [[ ! -f "$namespaceTplPath" ]]; then
-    echo "Missing template file: $namespaceTplFile"
-    exit 1
-fi
+echo "Found ${#templateFiles[@]} template files:"
+for file in "${templateFiles[@]}"; do
+    echo "  - $file"
+done
 
-if [[ ! -f "$kustomizeTplPath" ]]; then
-    echo "Missing template file: $kustomizeTplFile"
-    exit 1
-fi
-
-namespaceTpl="$(cat "$namespaceTplPath")"
-kustomizeTpl="$(cat "$kustomizeTplPath")"
+declare -A vars
+vars[SERVICE_NAME]="$name"
+vars[CHART_NAME]="$chartName"
+vars[CHART_REPO]="$chartRepo"
+vars[RELEASE_NAME]="$releaseName"
+vars[TEMPLATE_NAME]="$TemplateName"
 
 process_template() {
     local template="$1"
@@ -201,18 +220,31 @@ process_template() {
     echo "$template"
 }
 
-declare -A vars
-vars[SERVICE_NAME]="$name"
-vars[CHART_NAME]="$chartName"
-vars[CHART_REPO]="$chartRepo"
-vars[RELEASE_NAME]="$releaseName"
+for templateFile in "${templateFiles[@]}"; do
+    templatePath="$templateDir/$templateFile"
+    echo "Processing template: $templateFile"
+    
+    templateContent=$(cat "$templatePath")
+    
+    processedContent=$(process_template "$templateContent" vars)
+    
+    outputFile="${templateFile/.tpl./.}"
+    
+    echo "$processedContent" > "$serviceDir/$outputFile"
+    echo "  -> Created: $outputFile"
+done
 
-namespaceTpl=$(process_template "$namespaceTpl" vars)
-kustomizeTpl=$(process_template "$kustomizeTpl" vars)
+importantFiles=("namespace.yaml" "kustomization.yaml")
+for importantFile in "${importantFiles[@]}"; do
+    if [[ ! -f "$serviceDir/$importantFile" ]]; then
+        echo "Warning: Important file not generated: $importantFile"
+        echo "Template might be missing: ${importantFile/.yaml/.tpl.yaml}"
+    fi
+done
 
-echo "$namespaceTpl" > "$serviceDir/namespace.yaml"
-echo "$kustomizeTpl" > "$serviceDir/kustomization.yaml"
-
+echo ""
 echo "Tenant created at: $serviceDir"
+echo "Generated files:"
+ls -la "$serviceDir/"
 
 exit 0

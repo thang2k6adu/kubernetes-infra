@@ -4,6 +4,7 @@ set -e
 ProjectName=""
 ClusterName=""
 CertPath=""
+TemplateName=""
 DryRun=false
 VerboseOutput=false
 
@@ -12,6 +13,7 @@ while [[ $# -gt 0 ]]; do
     --ProjectName) ProjectName="$2"; shift 2 ;;
     --ClusterName) ClusterName="$2"; shift 2 ;;
     --CertPath) CertPath="$2"; shift 2 ;;
+    --TemplateName) TemplateName="$2"; shift 2 ;;
     --DryRun) DryRun=true; shift ;;
     --VerboseOutput) VerboseOutput=true; shift ;;
     *) echo "Unknown parameter: $1"; exit 1 ;;
@@ -20,6 +22,7 @@ done
 
 scriptRoot="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 libPath="$scriptRoot/lib"
+templatesDir="$scriptRoot/../templates"
 
 if [[ ! -f "$libPath/common.sh" || ! -f "$libPath/validation.sh" ]]; then
   echo "Required library files not found in $libPath. Please ensure lib/common.sh and lib/validation.sh exist."
@@ -75,6 +78,37 @@ GetUserInput() {
   done
 }
 
+# Function to list available templates
+ListAvailableTemplates() {
+  local templatesDir="$1"
+  local availableTemplates=()
+  
+  if [[ ! -d "$templatesDir" ]]; then
+    echo "Warning: Templates directory not found: $templatesDir"
+    return 1
+  fi
+  
+  # Find all template directories that contain namespace.tpl.yaml
+  while IFS= read -r -d $'\0' dir; do
+    if [[ -f "$dir/namespace.tpl.yaml" ]]; then
+      templateName=$(basename "$dir")
+      availableTemplates+=("$templateName")
+    fi
+  done < <(find "$templatesDir" -maxdepth 1 -mindepth 1 -type d -print0 2>/dev/null)
+  
+  if [[ ${#availableTemplates[@]} -eq 0 ]]; then
+    echo "No templates found in $templatesDir"
+    return 1
+  fi
+  
+  # Sort templates
+  IFS=$'\n' sortedTemplates=($(sort <<<"${availableTemplates[*]}"))
+  unset IFS
+  
+  echo "${sortedTemplates[@]}"
+  return 0
+}
+
 # Function to read directory structure from cluster-config.yaml
 ReadClusterConfig() {
   local clusterPath="$1"
@@ -101,7 +135,7 @@ echo "This script will deploy a service configuration to your cluster"
 echo "using GitOps pattern with ArgoCD."
 echo ""
 
-WriteSection "Step 1/6: Checking Dependencies"
+WriteSection "Step 1/7: Checking Dependencies"
 
 if ! warnings=$(TestDependencies); then
   echo "Dependency check failed"
@@ -113,12 +147,12 @@ if [[ -n "$warnings" ]]; then
   echo "$warnings"
 fi
 
-WriteSection "Step 2/6: Locating Project Root"
+WriteSection "Step 2/7: Locating Project Root"
 
 rootDir=$(GetProjectRoot) || { echo "Failed to locate project root"; exit 1; }
 echo "Project root: $rootDir"
 
-WriteSection "Step 4/6: Cluster Selection"
+WriteSection "Step 3/7: Cluster Selection"
 
 clustersPath="$rootDir"
 availableClusters=()
@@ -168,7 +202,7 @@ clusterTenantsFullPath="$clusterPath/$clusterTenantsPath"
 echo "Cluster services path: $clusterServicesFullPath"
 echo "Cluster tenants path: $clusterTenantsFullPath"
 
-WriteSection "Step 3/6: Service Selection"
+WriteSection "Step 4/7: Service Selection"
 
 # Path to service configurations within the cluster
 availableServices=()
@@ -212,7 +246,52 @@ echo "Service configuration directory validated: $serviceDir"
 
 serviceName=$(yq '.service.name' "$serviceDir/service.yaml")
 
-WriteSection "Step 5/6: Certificate Selection"
+WriteSection "Step 5/7: Template Selection"
+
+# List available templates
+if availableTemplates=$(ListAvailableTemplates "$templatesDir"); then
+  IFS=' ' read -r -a templateArray <<< "$availableTemplates"
+  
+  echo ""
+  echo "Available templates:"
+  for t in "${templateArray[@]}"; do
+    echo "  • $t"
+  done
+  echo ""
+  
+  if [[ -z "$TemplateName" ]]; then
+    # Check if service.yaml has template preference
+    serviceTemplate=$(yq '.service.template // ""' "$serviceDir/service.yaml" 2>/dev/null)
+    if [[ -n "$serviceTemplate" && " ${templateArray[*]} " =~ " $serviceTemplate " ]]; then
+      echo "Service specifies template: $serviceTemplate"
+      TemplateName="$serviceTemplate"
+    else
+      read -rp "Select template [default: v1]: " TemplateName
+      TemplateName="${TemplateName:-v1}"
+    fi
+  fi
+  
+  # Validate template exists
+  if [[ ! -d "$templatesDir/$TemplateName" ]]; then
+    echo "Template '$TemplateName' not found, using default 'v1'"
+    TemplateName="v1"
+  fi
+else
+  echo "No templates available, using default 'v1'"
+  TemplateName="v1"
+fi
+
+echo "Using template: $TemplateName"
+
+# Check if template has all required files
+requiredTemplateFiles=("namespace.tpl.yaml" "kustomization.tpl.yaml")
+for file in "${requiredTemplateFiles[@]}"; do
+  if [[ ! -f "$templatesDir/$TemplateName/$file" ]]; then
+    echo "Warning: Template '$TemplateName' is missing '$file'"
+  fi
+done
+
+WriteSection "Step 6/7: Certificate Selection"
 
 if [[ -z "$CertPath" ]]; then
   CertPath=$(GetCertificateFile "$rootDir")
@@ -223,7 +302,7 @@ fi
 
 echo "Using certificate: $CertPath"
 
-WriteSection "Step 6/6: Deployment Execution"
+WriteSection "Step 7/7: Deployment Execution"
 
 # Define tenant directory based on cluster configuration
 tenantDir="$clusterTenantsFullPath/$serviceName"
@@ -236,10 +315,10 @@ if [[ "$DryRun" == true ]]; then
   echo "Would execute the following commands:"
   echo ""
   echo "1. Generate tenant folder:"
-  echo "   $scriptRoot/gen-folder.sh --RootDir \"$rootDir\" --ClusterName \"$ClusterName\" --TenantsPath \"$clusterTenantsPath\" --ProjectName \"$ProjectName\""
+  echo "   $scriptRoot/gen-folder.sh --RootDir \"$rootDir\" --ClusterName \"$ClusterName\" --TenantsPath \"$clusterTenantsPath\" --ProjectName \"$ProjectName\" --TemplateName \"$TemplateName\""
   echo ""
   echo "2. Generate Helm values:"
-  echo "   $scriptRoot/gen-values.sh --RootDir \"$rootDir\" --ClusterName \"$ClusterName\" --TenantsPath \"$clusterTenantsPath\" --ProjectName \"$ProjectName\""
+  echo "   $scriptRoot/gen-values.sh --RootDir \"$rootDir\" --ClusterName \"$ClusterName\" --TenantsPath \"$clusterTenantsPath\" --ProjectName \"$ProjectName\" --TemplateName \"$TemplateName\""
   echo ""
   echo "3. Seal secrets:"
   echo "   $scriptRoot/seal-env.sh --CertPath \"$CertPath\" --RootDir \"$rootDir\" --ClusterName \"$ClusterName\" --TenantsPath \"$clusterTenantsPath\" --ProjectName \"$ProjectName\""
@@ -253,15 +332,30 @@ originalLocation=$(pwd)
 cd "$serviceDir" || { echo "Failed to change to service directory"; exit 1; }
 
 echo "[1/3] Generating tenant folder structure..."
-"$scriptRoot/gen-folder.sh" --RootDir "$rootDir" --ClusterName "$ClusterName" --TenantsPath "$clusterTenantsPath" --ProjectName "$ProjectName" || { cd "$originalLocation"; exit 1; }
+"$scriptRoot/gen-folder.sh" \
+  --RootDir "$rootDir" \
+  --ClusterName "$ClusterName" \
+  --TenantsPath "$clusterTenantsPath" \
+  --ProjectName "$ProjectName" \
+  --TemplateName "$TemplateName" || { cd "$originalLocation"; exit 1; }
 echo "Tenant folder structure created"
 
 echo "[2/3] Generating Helm values from service configuration..."
-"$scriptRoot/gen-values.sh" --RootDir "$rootDir" --ClusterName "$ClusterName" --TenantsPath "$clusterTenantsPath" --ProjectName "$ProjectName" || { cd "$originalLocation"; exit 1; }
+"$scriptRoot/gen-values.sh" \
+  --RootDir "$rootDir" \
+  --ClusterName "$ClusterName" \
+  --TenantsPath "$clusterTenantsPath" \
+  --ProjectName "$ProjectName" \
+  --TemplateName "$TemplateName" || { cd "$originalLocation"; exit 1; }
 echo "Helm values.yaml created"
 
 echo "[3/3] Sealing environment variables with kubeseal..."
-"$scriptRoot/seal-env.sh" --CertPath "$CertPath" --RootDir "$rootDir" --ClusterName "$ClusterName" --TenantsPath "$clusterTenantsPath" --ProjectName "$ProjectName" || { cd "$originalLocation"; exit 1; }
+"$scriptRoot/seal-env.sh" \
+  --CertPath "$CertPath" \
+  --RootDir "$rootDir" \
+  --ClusterName "$ClusterName" \
+  --TenantsPath "$clusterTenantsPath" \
+  --ProjectName "$ProjectName" || { cd "$originalLocation"; exit 1; }
 echo "Secrets sealed successfully"
 
 cd "$originalLocation"
@@ -274,6 +368,7 @@ echo "Deployment Details:"
 echo "  Service:   $serviceName"
 echo "  Cluster:   $ClusterName"
 echo "  Namespace: $serviceName"
+echo "  Template:  $TemplateName"
 echo "  Output:    $tenantDir"
 echo ""
 
@@ -293,3 +388,9 @@ for f in "${files[@]}"; do
     echo "  [+] $f ($size bytes)"
   fi
 done
+
+if [[ -d "$templatesDir/$TemplateName" ]]; then
+  templateFiles=$(find "$templatesDir/$TemplateName" -name "*.tpl.yaml" -type f | wc -l)
+  echo ""
+  echo "Template '$TemplateName' provides $templateFiles template files"
+fi
