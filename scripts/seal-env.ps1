@@ -112,8 +112,9 @@ try {
         
         # Create temporary env files
         Write-Verbose "Creating temporary env files"
-        $configData | Out-File "config.env" -Encoding utf8 -NoNewline
-        $secretData | Out-File "secret.env" -Encoding utf8 -NoNewline
+        $configData | Set-Content "config.env" -Encoding utf8
+        $secretData | Set-Content "secret.env" -Encoding utf8
+
         
         # Generate ConfigMap
         Write-Host "Creating ConfigMap..." -ForegroundColor Cyan

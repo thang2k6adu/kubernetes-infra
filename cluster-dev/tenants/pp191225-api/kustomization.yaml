@@ -10,7 +10,7 @@ resources:
 
 helmCharts:
   - name: dev-pp191225-api
-    repo: ghcr.io/thang2k6adu/k8s-charts
+    repo: https://thang2k6adu.github.io/backend-service-charts
     version: 0.1.0
     releaseName: dev
     namespace: pp191225-api

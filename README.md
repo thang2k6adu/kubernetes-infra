@@ -136,3 +136,9 @@ sudo lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
 sudo resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
 ```
 
+tạo 1 tenants
+
+window
+
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+.\scripts\create-service.ps1
