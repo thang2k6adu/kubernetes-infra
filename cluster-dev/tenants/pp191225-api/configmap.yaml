@@ -1,4 +1,4 @@
-﻿apiVersion: v1
+apiVersion: v1
 data:
   ALGOLIA_APP_ID: ""
   ALGOLIA_INDEX_NAME: ""

@@ -142,3 +142,8 @@ window
 
 Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 .\scripts\create-service.ps1
+
+chmod +x scripts/gen-folder.sh scripts/gen-values.sh scripts/seal-env.sh scripts/create-service.sh
+
+cd services/pp191225-api
+scripts/create-service.sh

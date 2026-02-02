@@ -1,4 +1,4 @@
-﻿# Helm values for pp191225-api
+# Helm values for pp191225-api
 # Generated from service.yaml configuration
 
 image:
@@ -6,7 +6,9 @@ image:
   pullPolicy: Always
   tag: "91776ad92b4761c49707ecfc81efb42e196e6528"
 
-imagePullSecrets: []
+# err is for vs code lint, ignore it
+imagePullSecrets:
+  []
 
 nameOverride: "pp191225-api"
 fullnameOverride: ""
@@ -119,6 +121,7 @@ secrets:
   enabled: false
   data: {}
 
+# This lint err is for vs code, ignore it
 volumes:
   - name: tmp
     emptyDir: {}
@@ -195,4 +198,3 @@ rbac:
 
 httpRoute:
   enabled: false
-

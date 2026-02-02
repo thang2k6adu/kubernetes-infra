@@ -1,17 +1,25 @@
-# Helm values for {{SERVICE_NAME}}
+# Helm values for {{ .service.name }}
 # Generated from service.yaml configuration
 
 image:
-  repository: {{IMAGE_REPO}}
-  pullPolicy: {{IMAGE_PULL_POLICY}}
-  tag: "{{IMAGE_TAG}}"
+  repository: {{ .image.repository }}
+  pullPolicy: {{ .image.pullPolicy }}
+  tag: "{{ .image.tag }}"
 
-imagePullSecrets: []
+# err is for vs code lint, ignore it
+imagePullSecrets:
+{{- if .imagePullSecrets }}
+{{- range .imagePullSecrets }}
+  - name: {{ . }}
+{{- end }}
+{{- else }}
+  []
+{{- end }}
 
-nameOverride: "{{SERVICE_NAME}}"
+nameOverride: "{{ .service.name }}"
 fullnameOverride: ""
 
-replicaCount: {{REPLICAS}}
+replicaCount: {{ .replicas }}
 
 strategy:
   type: RollingUpdate
@@ -46,32 +54,32 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: {{PORT}}
-  targetPort: {{PORT}}
+  port: {{ .network.port }}
+  targetPort: {{ .network.port }}
   annotations: {}
 
 ingress:
-  enabled: false
+  enabled: {{ .network.ingress }}
   className: "nginx"
   annotations: {}
   hosts:
-    - host: {{DOMAIN}}
+    - host: {{ .network.domain }}
       paths:
         - path: /
           pathType: Prefix
 
 resources:
   requests:
-    cpu: "{{CPU_REQUEST}}"
-    memory: "{{MEM_REQUEST}}"
+    cpu: "{{ .resources.cpu.request }}"
+    memory: "{{ .resources.memory.request }}"
   limits:
-    cpu: "{{CPU_LIMIT}}"
-    memory: "{{MEM_LIMIT}}"
+    cpu: "{{ .resources.cpu.limit }}"
+    memory: "{{ .resources.memory.limit }}"
 
 livenessProbe:
   httpGet:
-    path: {{LIVENESS_PATH}}
-    port: {{PORT}}
+    path: {{ .healthcheck.liveness.path }}
+    port: {{ .network.port }}
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
@@ -80,8 +88,8 @@ livenessProbe:
 
 readinessProbe:
   httpGet:
-    path: {{READINESS_PATH}}
-    port: {{PORT}}
+    path: {{ .healthcheck.readiness.path }}
+    port: {{ .network.port }}
   initialDelaySeconds: 10
   periodSeconds: 5
   timeoutSeconds: 3
@@ -90,8 +98,8 @@ readinessProbe:
 
 startupProbe:
   httpGet:
-    path: {{STARTUP_PATH}}
-    port: {{PORT}}
+    path: {{ .healthcheck.startup.path }}
+    port: {{ .network.port }}
   initialDelaySeconds: 0
   periodSeconds: 10
   timeoutSeconds: 3
@@ -99,17 +107,17 @@ startupProbe:
   failureThreshold: 30
 
 autoscaling:
-  enabled: {{AUTOSCALING_ENABLED}}
-  minReplicas: {{MIN_REPLICAS}}
-  maxReplicas: {{MAX_REPLICAS}}
-  targetCPUUtilizationPercentage: {{CPU_TARGET}}
-  targetMemoryUtilizationPercentage: {{MEM_TARGET}}
+  enabled: {{ .autoscaling.enabled }}
+  minReplicas: {{ .autoscaling.min }}
+  maxReplicas: {{ .autoscaling.max }}
+  targetCPUUtilizationPercentage: {{ .autoscaling.cpuTarget }}
+  targetMemoryUtilizationPercentage: {{ .autoscaling.memoryTarget }}
 
 envFrom:
   - configMapRef:
-      name: {{CONFIGMAP_NAME}}
+      name: {{ printf "%s-config" (strings.TrimSuffix "-api" .service.name) }}
   - secretRef:
-      name: {{SECRET_NAME}}
+      name: {{ printf "%s-secret" (strings.TrimSuffix "-api" .service.name) }}
 
 configMap:
   enabled: false
@@ -119,24 +127,27 @@ secrets:
   enabled: false
   data: {}
 
+# This lint err is for vs code, ignore it
 volumes:
-  - name: tmp
+{{- range .storage.volumes }}
+  - name: {{ .name }}
+{{- if eq .type "emptyDir" }}
     emptyDir: {}
-  - name: cache
-    emptyDir: {}
+{{- end }}
+{{- end }}
 
 volumeMounts:
-  - name: tmp
-    mountPath: /tmp
-  - name: cache
-    mountPath: /app/cache
+{{- range .storage.volumes }}
+  - name: {{ .name }}
+    mountPath: {{ .mountPath }}
+{{- end }}
 
 persistence:
-  enabled: {{PERSISTENCE_ENABLED}}
+  enabled: {{ .persistence.enabled }}
   storageClass: ""
   accessMode: ReadWriteOnce
-  size: {{PERSISTENCE_SIZE}}
-  mountPath: {{PERSISTENCE_PATH}}
+  size: {{ .persistence.size }}
+  mountPath: {{ .persistence.mountPath }}
   annotations: {}
 
 podDisruptionBudget:
@@ -156,7 +167,7 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - {{SERVICE_NAME}}
+                  - {{ .service.name }}
           topologyKey: kubernetes.io/hostname
 
 serviceMonitor:
