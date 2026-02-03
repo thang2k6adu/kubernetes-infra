@@ -64,11 +64,6 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater-config
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater-config
-data:
-  helm_values.enabled: "true"
-  log.level: debug
-  applications_api: argocd
-  argocd.insecure: "true"
 ---
 apiVersion: v1
 kind: ConfigMap

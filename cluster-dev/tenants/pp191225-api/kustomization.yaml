@@ -15,3 +15,7 @@ helmCharts:
     releaseName: dev
     namespace: pp191225-api
     valuesFile: values.yaml
+
+commonAnnotations:
+  argocd-image-updater.argoproj.io/image-list: "app=ghcr.io/thang2k6adu/pp191225-be/be"
+  argocd-image-updater.argoproj.io/app.update-strategy: latest
