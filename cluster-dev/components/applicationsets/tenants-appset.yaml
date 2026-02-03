@@ -16,7 +16,6 @@ spec:
       annotations:
         argocd-image-updater.argoproj.io/image-list: backend=ghcr.io/thang2k6adu/pp191225-be/be
         argocd-image-updater.argoproj.io/backend.update-strategy: latest
-        argocd-image-updater.argoproj.io/write-back-method: git
         argocd-image-updater.argoproj.io/backend.force-update: "true"
         argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/argocd-repo-creds
     spec:
