@@ -68,6 +68,7 @@ data:
   helm_values.enabled: "true"
   log.level: debug
   applications_api: argocd
+  argocd.insecure: "true"
 ---
 apiVersion: v1
 kind: ConfigMap
