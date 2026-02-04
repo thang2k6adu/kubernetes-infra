@@ -21,7 +21,7 @@ spec:
     metadata:
       name: "{{path.basename}}"
       annotations:
-        argocd-image-updater.argoproj.io/image-list: backend={{ image.repository }}:{{ image.tag }}
+        argocd-image-updater.argoproj.io/image-list: backend={{ image.repository }}
         # argocd-image-updater.argoproj.io/backend.force-update: "true"
         argocd-image-updater.argoproj.io/backend.allow-tags: regexp:^[0-9a-f]{40}$
         argocd-image-updater.argoproj.io/backend.update-strategy: newest-build
