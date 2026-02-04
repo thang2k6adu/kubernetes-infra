@@ -25,9 +25,8 @@ spec:
         # Have to force because argocd cannot detect image running with kustomization overlay with helm
         # have to fix later
         # argocd-image-updater.argoproj.io/backend.force-update: "true"
-        argocd-image-updater.argoproj.io/write-back-target: kustomization:.
         argocd-image-updater.argoproj.io/backend.allow-tags: regexp:^[0-9a-f]{40}$
-        argocd-image-updater.argoproj.io/backend.update-strategy: latest
+        argocd-image-updater.argoproj.io/backend.update-strategy: newest-build
         argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/argocd-repo-creds
     spec:
       project: tenant
@@ -45,6 +44,9 @@ spec:
         repoURL: https://github.com/thang2k6adu/kubernetes-infra.git
         targetRevision: main
         path: "{{path}}"
+        kustomize:
+          images:
+          - "{{ image.repository }}:{{ image.tag }}"
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{path.basename}}"
