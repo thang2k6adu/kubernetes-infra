@@ -64,6 +64,8 @@ metadata:
     app.kubernetes.io/name: argocd-image-updater-config
     app.kubernetes.io/part-of: argocd-image-updater
   name: argocd-image-updater-config
+data:
+  log.level: debug
 ---
 apiVersion: v1
 kind: ConfigMap
