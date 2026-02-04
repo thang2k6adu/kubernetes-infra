@@ -10,21 +10,12 @@ spec:
         revision: main
         directories:
           - path: cluster-dev/tenants/*
-        values:
-          image_repository: |
-            {{- $filePath := printf "cluster-dev/tenants/%s/values.yaml" .path.basename -}}
-            {{- $content := readFile $filePath -}}
-            {{- if $content -}}
-              {{- $values := $content | fromYaml -}}
-              {{- $values.image.repository -}}
-            {{- end -}}
   template:
     metadata:
       name: "{{path.basename}}"
       annotations:
-        argocd-image-updater.argoproj.io/image-list: backend={{values.image_repository}}
+        argocd-image-updater.argoproj.io/image-list: backend={{ .Values.image.repository }}
         argocd-image-updater.argoproj.io/backend.update-strategy: latest
-        argocd-image-updater.argoproj.io/backend.tag-filter: "^[a-f0-9]{40}$"
         argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/argocd-repo-creds
     spec:
       project: tenant
