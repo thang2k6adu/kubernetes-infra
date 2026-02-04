@@ -103,6 +103,7 @@ spec:
       containers:
       - args:
         - run
+        - --dry-run=false
         env:
         - name: APPLICATIONS_API
           valueFrom:

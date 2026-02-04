@@ -24,6 +24,7 @@ spec:
         argocd-image-updater.argoproj.io/image-list: backend={{ image.repository }}:{{ image.tag }}
         # Have to force because argocd cannot detect image running with kustomization overlay with helm
         # have to fix later
+        # argocd-image-updater.argoproj.io/backend.force-update: "true"
         argocd-image-updater.argoproj.io/write-back-target: kustomization:.
         argocd-image-updater.argoproj.io/backend.allow-tags: regexp:^[0-9a-f]{40}$
         argocd-image-updater.argoproj.io/backend.update-strategy: latest
