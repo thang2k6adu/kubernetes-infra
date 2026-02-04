@@ -21,7 +21,7 @@ spec:
     metadata:
       name: "{{path.basename}}"
       annotations:
-        argocd-image-updater.argoproj.io/image-list: backend={{ image.repository }}:{{ image.tag }}
+        argocd-image-updater.argoproj.io/image-list: backend={{ image.repository }}
         # Have to force because argocd cannot detect image running with kustomization overlay with helm
         # have to fix later
         # argocd-image-updater.argoproj.io/backend.force-update: "true"
