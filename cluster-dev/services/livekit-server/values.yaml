@@ -181,7 +181,7 @@ readinessProbe:
   periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 3
-  successThreshold: 1alth
+  successThreshold: 1
 
 tolerations: []
 
