@@ -51,11 +51,11 @@ livekit:
     enabled: true
     # Sử dụng name trong meta data của secret
     existingSecret: "livekit-server-secret"
-    
     # Thêm cấu hình cho secret, forget it, ko cần quan tâm
     secretAnnotations: {}
     labels: {}
-    
+
+  loadConfigFromSecret: true 
   
   # Thêm các cấu hình monitoring
   prometheus:
