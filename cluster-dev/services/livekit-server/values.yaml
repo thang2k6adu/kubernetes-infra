@@ -3,6 +3,10 @@ fullnameOverride: ""
 
 replicaCount: 1
 
+# Tắt cái default của helm chart gốc
+# ko tắt nó sẽ lấy của cái khác (vd pp191225)
+envFrom: []
+
 image:
   repository: livekit/livekit-server
   tag: "latest"  # Nên ghim version cụ thể, VD: "v1.6.0"
@@ -51,6 +55,7 @@ livekit:
     # Thêm cấu hình cho secret, forget it, ko cần quan tâm
     secretAnnotations: {}
     labels: {}
+    
   
   # Thêm các cấu hình monitoring
   prometheus:
