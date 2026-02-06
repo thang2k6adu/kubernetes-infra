@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - ghcr.io/thang2k6adu/pp191225-be/be:f645731782d53b110108fddd7fa1c6487c8e3ca8
