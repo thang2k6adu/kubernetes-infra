@@ -87,7 +87,7 @@ Nếu không có lỗi → cấu hình hợp lệ.
 
 ---
 
-## 📌 Giải thích kỹ thuật (có cơ sở)
+## Giải thích kỹ thuật (có cơ sở)
 
 WebSocket cần 2 header bắt buộc:
 
