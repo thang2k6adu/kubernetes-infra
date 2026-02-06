@@ -9,9 +9,9 @@ resources:
   - namespace.yaml
 
 helmCharts:
-  - name: backend-service-chart
-    repo: https://thang2k6adu.github.io/backend-service-charts
-    version: 0.1.0
+  - name: livekit-server
+    repo: https://helm.livekit.io
+    version: 1.9.0
     releaseName: dev
     namespace: livekit-server
     valuesFile: values.yaml
