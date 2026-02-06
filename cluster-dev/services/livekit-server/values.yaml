@@ -201,7 +201,7 @@ extraVolumeMounts: []
 # Environment variables
 env:
   - name: LIVEKIT_DEBUG
-    value: "false"
+    value: "true"
   - name: LIVEKIT_DEVELOPMENT
     value: "false"
 
