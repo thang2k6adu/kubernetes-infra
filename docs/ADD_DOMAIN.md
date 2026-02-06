@@ -263,6 +263,10 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
 
     location / {
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+
         proxy_pass https://$UPSTREAM;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
@@ -272,6 +276,10 @@ server {
 
     location /api/ {
         limit_req zone=api_limit burst=20 nodelay;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
 
         proxy_pass https://$UPSTREAM;
         proxy_set_header Host \$host;
