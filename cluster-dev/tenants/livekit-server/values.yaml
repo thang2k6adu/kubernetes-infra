@@ -23,6 +23,7 @@ terminationGracePeriodSeconds: 18000
 livekit:
   port: 7880
   log_level: info
+  key_file: "keys.yaml"
   rtc:
     tcp_port: 7881
     port_range_start: 50000
@@ -59,8 +60,9 @@ livekit:
 # Nó tự tìm key LIVEKIT_KEYS
 storeKeysInSecret:
   enabled: true
-  existingSecret: "livekit-server-secret"
-  keys: {}
+  existingSecret: ""
+  keys:
+    devkey: "9f3c1a6b8d2e4f7a9c1d3e5f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"
 
 
 # Thêm các cấu hình monitoring
