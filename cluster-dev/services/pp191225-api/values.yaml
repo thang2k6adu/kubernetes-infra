@@ -53,11 +53,11 @@ service:
   annotations: {}
 
 ingress:
-  enabled: false
+  enabled: true
   className: "nginx"
   annotations: {}
   hosts:
-    - host: pp191225.api.thang2k6adu.com
+    - host: pp191225api.thang2k6adu.com
       paths:
         - path: /
           pathType: Prefix
