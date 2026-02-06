@@ -42,7 +42,7 @@ livekit:
     db: 0
   
   # API keys - KHÔNG nên config trực tiếp ở đây
-  keys: null
+  # keys: {}
     # devkey: "9f3c1a6b8d2e4f7a9c1d3e5f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"
   
   turn:
@@ -58,12 +58,12 @@ livekit:
 # Bảo livekit đọc config từ secret tên là livekit-server-secret
 # Nó tự tìm key LIVEKIT_KEYS
 storeKeysInSecret:
-  enabled: false
+  enabled: true
   # Sử dụng name trong meta data của secret
-  existingSecret: ""
-  # Thêm cấu hình cho secret, forget it, ko cần quan tâm
-  secretAnnotations: {}
-  labels: {}
+  # existingSecret: "livekit-server-secret"
+  keys:
+    devkey: "9f3c1a6b8d2e4f7a9c1d3e5f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"
+
 
 # Thêm các cấu hình monitoring
 prometheus:
