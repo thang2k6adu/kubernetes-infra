@@ -6,6 +6,7 @@ data:
   AWS_REGION: us-east-1
   AWS_S3_BUCKET: ""
   CLOUDINARY_CLOUD_NAME: ""
+  CORS_ORIGIN: http://localhost:5173
   ELASTICSEARCH_NODE: http://localhost:9200
   FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@pp191225-53185.iam.gserviceaccount.com
   FIREBASE_PROJECT_ID: pp191225-53185
@@ -16,7 +17,7 @@ data:
   MAIL_PORT: "587"
   MAIL_SECURE: "false"
   MAIL_USER: your-email@gmail.com
-  NODE_ENV: development
+  NODE_ENV: production
   PORT: "3000"
   REDIS_HOST: adapting-chow-38310.upstash.io
   REDIS_PORT: "6379"
