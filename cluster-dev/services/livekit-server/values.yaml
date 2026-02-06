@@ -36,10 +36,9 @@ livekit:
   
   redis:
     enabled: false
-    address: "redis-12345.upstash.io:6379"
-    # Tạo secret với metadata.name là passwordSecret
-    passwordSecret: livekit-server-secret
-    passwordSecretKey: REDIS_PASSWORD
+    # address: "redis-12345.upstash.io:6379"
+    # passwordSecret: livekit-server-secret
+    # passwordSecretKey: REDIS_PASSWORD
     db: 0
   
   # API keys - KHÔNG nên config trực tiếp ở đây
