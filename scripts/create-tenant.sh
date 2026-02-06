@@ -132,6 +132,26 @@ ReadClusterConfig() {
   echo "$servicesPath:$tenantsPath:$certPath"
 }
 
+GetServiceName() {
+  local valuesFile="$1"
+  
+  if [[ ! -f "$valuesFile" ]]; then
+    echo "Error: values.yaml not found: $valuesFile"
+    return 1
+  fi
+  
+  # Try to get nameOverride first, if not found use the directory name
+  local nameOverride=$(yq '.nameOverride // ""' "$valuesFile")
+  
+  if [[ -n "$nameOverride" ]]; then
+    echo "$nameOverride"
+  else
+    # Fallback to directory name
+    local dirName=$(basename "$(dirname "$valuesFile")")
+    echo "$dirName"
+  fi
+}
+
 clear
 echo "This script will deploy a service configuration to your cluster"
 echo "using GitOps pattern with ArgoCD."
@@ -240,15 +260,17 @@ fi
 
 # Test service configuration directory within cluster
 serviceDir="$clusterServicesFullPath/$ProjectName"
-if [[ ! -d "$serviceDir" ]] || [[ ! -f "$serviceDir/service.yaml" ]]; then
+if [[ ! -d "$serviceDir" ]] || [[ ! -f "$serviceDir/values.yaml" ]]; then
   echo "Service configuration not found in cluster $ClusterName: $serviceDir"
-  echo "Expected to find service.yaml in the directory"
+  echo "Expected to find values.yaml in the directory"
   exit 1
 fi
 
 echo "Service configuration directory validated: $serviceDir"
 
-serviceName=$(yq '.service.name' "$serviceDir/service.yaml")
+# Get service name from values.yaml
+serviceName=$(GetServiceName "$serviceDir/values.yaml") || exit 1
+echo "Service name determined: $serviceName"
 
 WriteSection "Step 5/7: Template Selection"
 
@@ -264,25 +286,25 @@ if availableTemplates=$(ListAvailableTemplates "$templatesDir"); then
   echo ""
   
   if [[ -z "$TemplateName" ]]; then
-    # Check if service.yaml has template preference
-    serviceTemplate=$(yq '.service.template // ""' "$serviceDir/service.yaml" 2>/dev/null)
+    # Check if values.yaml has template preference (in the new structure, template might be at root level)
+    serviceTemplate=$(yq '.template // ""' "$serviceDir/values.yaml" 2>/dev/null)
     if [[ -n "$serviceTemplate" && " ${templateArray[*]} " =~ " $serviceTemplate " ]]; then
       echo "Service specifies template: $serviceTemplate"
       TemplateName="$serviceTemplate"
     else
-      read -rp "Select template [default: v1]: " TemplateName
-      TemplateName="${TemplateName:-v1}"
+      read -rp "Select template [default: dev]: " TemplateName
+      TemplateName="${TemplateName:-dev}"
     fi
   fi
   
   # Validate template exists
   if [[ ! -d "$templatesDir/$TemplateName" ]]; then
-    echo "Template '$TemplateName' not found, using default 'v1'"
-    TemplateName="v1"
+    echo "Template '$TemplateName' not found, using default 'dev'"
+    TemplateName="dev"
   fi
 else
-  echo "No templates available, using default 'v1'"
-  TemplateName="v1"
+  echo "No templates available, using default 'dev'"
+  TemplateName="dev"
 fi
 
 echo "Using template: $TemplateName"
@@ -333,7 +355,7 @@ if [[ "$DryRun" == true ]]; then
   echo "   $scriptRoot/gen-values.sh --RootDir \"$rootDir\" --ClusterName \"$ClusterName\" --TenantsPath \"$clusterTenantsPath\" --ProjectName \"$ProjectName\" --TemplateName \"$TemplateName\""
   echo ""
   echo "3. Seal secrets:"
-  echo "   $scriptRoot/seal-env.sh --CertPath \"$CertPath\" --RootDir \"$rootDir\" --ClusterName \"$ClusterName\" --TenantsPath \"$clusterTenantsPath\" --ProjectName \"$ProjectName\""
+  echo "   $scriptRoot/seal-env.sh --CertPath \"$CertPath\" --RootDir \"$rootDir\" --ClusterName \"$ClusterName\" --ProjectName \"$ProjectName\""
   echo ""
   echo "Output directory:"
   echo "   $tenantDir"
@@ -352,7 +374,9 @@ echo "[1/3] Generating tenant folder structure..."
   --TemplateName "$TemplateName" || { cd "$originalLocation"; exit 1; }
 echo "Tenant folder structure created"
 
-echo "[2/3] Generating Helm values from service configuration..."
+echo "[2/3] Copying Helm values from service configuration..."
+# For the new structure, we might just copy the values.yaml to the tenant directory
+# But we should also check if gen-values.sh needs to be updated to work with the new structure
 "$scriptRoot/gen-values.sh" \
   --RootDir "$rootDir" \
   --ClusterName "$ClusterName" \

@@ -1,0 +1,248 @@
+nameOverride: "livekit-server"
+fullnameOverride: ""
+
+replicaCount: 1
+
+image:
+  repository: livekit/livekit-server
+  tag: ""  # Nên ghim version cụ thể, VD: "v1.6.0"
+  pullPolicy: IfNotPresent
+  # Thêm imagePullSecrets nếu dùng private registry
+  # pullSecrets:
+  #   - name: regcred
+
+imagePullSecrets: []
+
+terminationGracePeriodSeconds: 18000
+
+# Configuration for livekit
+livekit:
+  port: 7880
+  log_level: info
+  rtc:
+    tcp_port: 7881
+    port_range_start: 50000
+    port_range_end: 60000
+    # Ask STUN to get external IP (public IP)
+    use_external_ip: true
+    external_ip: "203.0.113.5"  # REAL PUBLIC IP of your server (If use reverse proxy / LB, set to that IP)
+    # STUN free của google
+    stun_servers:
+      - "stun.l.google.com:19302"
+  
+  redis:
+    enabled: true
+    address: "redis-12345.upstash.io:6379"
+    # Tạo secret với metadata với name là passwordSecretKey
+    passwordSecretKey: redis-password
+    passwordSecret: livekit-server-secret
+    db: 0
+  
+  # API keys - KHÔNG nên config trực tiếp ở đây
+  keys: {}
+
+  storeKeysInSecret:
+  enabled: true
+  # Sử dụng name trong meta data của secret
+  existingSecret: "livekit-server-secret"
+  
+  # Thêm cấu hình cho secret, forget it, ko cần quan tâm
+  secretAnnotations: {}
+  labels: {}
+  
+  # Thêm các cấu hình monitoring
+  prometheus:
+    enabled: false
+    port: 7882
+  
+  # Health checks
+  health:
+    enabled: true
+    port: 8080
+    path: "/health"
+  
+  turn:
+    enabled: false
+    # Cấu hình bắt buộc nếu enable TURN
+    # domain: "turn.yourdomain.com"
+    # tls_port: 443
+    # udp_port: 443
+    # secret: "your-turn-secret"
+    # external_tls: true
+    # loadBalancerAnnotations: {}
+
+# Ingress configuration
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+  hosts:
+    - host: livekit.thang2k6adu.xyz
+      paths:
+        - path: /
+          pathType: Prefix
+
+
+service:
+  type: ClusterIP
+  port: 7880
+  annotations: {}
+    # cloud.google.com/load-balancer-type: "Internal" # GCP internal LB
+    # service.beta.kubernetes.io/aws-load-balancer-type: "nlb" # AWS NLB
+  
+# Chỉ bật nếu dùng turn và trên cloud
+# còn có reverse proxy LB riêng thì bỏ qua
+turnLoadbalancer:
+  enabled: false
+  annotations: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  # targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 80
+  behavior: {}
+
+# Pod Disruption Budget cho HA
+# Pod Disruption Budget là một tính năng của Kubernetes cho phép bạn chỉ định số lượng pod có thể bị gián đoạn trong một thời gian nhất định.
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# Thêm label cụ thể cho node chạy LiveKit
+nodeSelector:
+  {}
+
+# LiveKit cần CPU nhiều hơn RAM
+resources:
+  requests:
+    cpu: "500m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podHostNetwork: true
+
+podAnnotations:
+  sidecar.istio.io/inject: "false"
+  linkerd.io/inject: disabled
+  # Thêm annotations cho monitoring, Prometheus thường (khác với Prometheus Operator)
+  prometheus.io/scrape: "true"
+  # Builtin metrics endpoint của LiveKit
+  prometheus.io/port: "7882"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+  path: /health
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+  path: /health
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - livekit-server
+          topologyKey: kubernetes.io/hostname
+
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+deploymentAnnotations: {}
+
+# Persistent Volume cho logs/config
+persistence:
+  enabled: false
+  # storageClass: ""
+  # accessMode: ReadWriteOnce
+  # size: 1Gi
+  # mountPath: /var/log/livekit
+
+# Extra volumes và mounts
+extraVolumes: []
+extraVolumeMounts: []
+
+# Environment variables
+env:
+  - name: LIVEKIT_DEBUG
+    value: "false"
+  - name: LIVEKIT_DEVELOPMENT
+    value: "false"
+
+initContainers: []
+sidecars: []
+
+# Chỉ dùng khi deploy google cloud với GCP LB
+gcp:
+  backendConfig:
+    enabled: false
+    name: ""
+    timeoutSec: 36000
+    connectionDraining:
+      drainingTimeoutSec: 60
+
+# ServiceMonitor cho Prometheus Operator
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  annotations: {}
+
+podMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+
+networkPolicy:
+  enabled: false
+  ingress: []
+  egress: []
+
+podLabels: {}
+extraManifests: []

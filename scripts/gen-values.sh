@@ -5,7 +5,7 @@ set -e
 ClusterName=""
 TenantsPath="tenants"  # Default value
 RootDir=""
-TemplateName="v1"  
+TemplateName="dev"  
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -67,18 +67,35 @@ echo "Using Template: $TemplateName"
 scriptRoot="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$scriptRoot/lib/common.sh"
 
-trap 'echo "Failed to generate values.yaml: $ERR"; exit 1' ERR
-
-try() { "$@"; }
+trap 'echo "Failed to copy values.yaml: $ERR"; exit 1' ERR
 
 serviceDir="$(pwd)"
-svc="$(GetServiceConfig "$serviceDir")"
 
-name="$(yq '.service.name' "$serviceDir/service.yaml")"
-if [[ -z "$name" || "$name" == "null" ]]; then
-  echo "service.name is required in service.yaml"
+# Check for values.yaml in service directory
+if [[ ! -f "$serviceDir/values.yaml" ]]; then
+  echo "Error: values.yaml not found in $serviceDir"
   exit 1
 fi
+
+echo "Found values.yaml in service directory"
+
+# Get service name from values.yaml
+serviceName=$(yq '.nameOverride // ""' "$serviceDir/values.yaml" 2>/dev/null)
+if [[ -z "$serviceName" ]]; then
+  serviceName=$(yq '.fullnameOverride // ""' "$serviceDir/values.yaml" 2>/dev/null)
+fi
+
+if [[ -z "$serviceName" ]]; then
+  # Try to get from ProjectName parameter
+  if [[ -n "$ProjectName" ]]; then
+    serviceName="$ProjectName"
+  else
+    # Fallback to directory name
+    serviceName=$(basename "$serviceDir")
+  fi
+fi
+
+echo "Service name determined: $serviceName"
 
 if [[ -n "$RootDir" ]]; then
   if [[ ! -d "$RootDir" ]]; then
@@ -96,7 +113,7 @@ if [[ ! -d "$clusterPath" ]]; then
   exit 1
 fi
 
-tenantDir="$clusterPath/$TenantsPath/$name"
+tenantDir="$clusterPath/$TenantsPath/$serviceName"
 if [[ ! -d "$tenantDir" ]]; then
   echo "Tenant directory not found: $tenantDir"
   echo "Please run gen-folder.sh first to create the tenant directory"
@@ -105,85 +122,17 @@ fi
 
 valuesFile="$tenantDir/values.yaml"
 
-templatesRoot="$scriptRoot/../templates"
-if [[ ! -d "$templatesRoot" ]]; then
-  echo "Templates root directory not found: $templatesRoot"
-  exit 1
-fi
+# Copy values.yaml to tenant directory
+cp "$serviceDir/values.yaml" "$valuesFile"
+echo "[+] Copied values.yaml to tenant directory"
 
-if [[ ! -d "$templatesRoot/$TemplateName" ]]; then
-  echo "Template '$TemplateName' not found in $templatesRoot"
-  echo "Available templates:"
-  find "$templatesRoot" -maxdepth 1 -mindepth 1 -type d -exec basename {} \;
-  exit 1
-fi
-
-templateDir="$templatesRoot/$TemplateName"
-templatePath="$templateDir/values.tpl.yaml"
-
-if [[ ! -f "$templatePath" ]]; then
-  echo "Warning: values.tpl.yaml not found in $templateDir"
-  
-  fallbackTemplate="$templatesRoot/values.tpl.yaml"
-  if [[ -f "$fallbackTemplate" ]]; then
-    templatePath="$fallbackTemplate"
-    echo "Using fallback template: $fallbackTemplate"
-  else
-    echo "No values template found. Creating minimal values.yaml..."
-    
-    yq '.service' "$serviceDir/service.yaml" > "$valuesFile"
-    echo "[+] Minimal values.yaml generated from service.yaml"
-    echo "File: $valuesFile"
-    exit 0
-  fi
-fi
-
-serviceYaml="$serviceDir/service.yaml"
-if [[ ! -f "$serviceYaml" ]]; then
-  echo "service.yaml not found in $serviceDir"
-  exit 1
-fi
-
-if ! command -v gomplate >/dev/null 2>&1; then
-  echo "gomplate is not installed. Install from https://github.com/hairyhenderson/gomplate"
-  exit 1
-fi
-
-if ! command -v gomplate >/dev/null 2>&1; then
-  echo "gomplate is not installed. Install from https://github.com/hairyhenderson/gomplate"
-  exit 1
-fi
-
-echo "Using template: $templatePath"
-echo "Processing service.yaml: $serviceYaml"
-
-serviceYaml="$(realpath "$serviceYaml")"
-
-
-tempServiceYaml="/tmp/service-with-template-$$.yaml"
-cp "$serviceYaml" "$tempServiceYaml"
-
-if ! yq -e '.service.template' "$tempServiceYaml" >/dev/null 2>&1; then
-  yq -i '.service.template = "'"$TemplateName"'"' "$tempServiceYaml"
-fi
-
-json="$(yq -o=json "$tempServiceYaml")"
-
-echo "$json" | gomplate \
-  -c ".=stdin:?type=application/json" \
-  -f "$templatePath" \
-  -o "$valuesFile"
-
-rm -f "$tempServiceYaml"
-
-echo "[+] values.yaml generated successfully"
-echo "File: $valuesFile"
-
+# Validate the copied file
 if [[ -f "$valuesFile" ]]; then
   file_size=$(wc -c < "$valuesFile" | awk '{print $1}')
-  echo "Generated file size: $file_size bytes"
+  echo "File size: $file_size bytes"
+  echo "Location: $valuesFile"
 else
-  echo "Warning: values.yaml was not created"
+  echo "Error: Failed to copy values.yaml"
   exit 1
 fi
 

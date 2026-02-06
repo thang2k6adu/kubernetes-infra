@@ -5,7 +5,7 @@ set -euo pipefail
 ClusterName=""
 TenantsPath="tenants"  # Default value
 RootDir=""
-TemplateName="v1"  
+TemplateName="dev"  
 TEMPLATE_DIR="${TEMPLATE_DIR:-}"
 CLUSTER_ROOT_SEARCH_PATHS="${CLUSTER_ROOT_SEARCH_PATHS:-}"
 
@@ -69,36 +69,80 @@ fi
 echo "Using Template: $TemplateName"
 
 baseDir="$(pwd)"
-serviceFile="$baseDir/service.yaml"
+valuesFile="$baseDir/values.yaml"
 
-if [[ ! -f "$serviceFile" ]]; then
-    echo "service.yaml not found in $baseDir"
+# Check for values.yaml
+if [[ ! -f "$valuesFile" ]]; then
+    echo "values.yaml not found in $baseDir"
     exit 1
 fi
 
-yaml_config=$(yq '.service' "$serviceFile")
+# Extract service name from values.yaml
+# Priority: 1. nameOverride, 2. fullnameOverride, 3. ProjectName parameter, 4. Directory name
+serviceName=""
 
-name=$(echo "$yaml_config" | yq '.name')
-releaseName=$(echo "$yaml_config" | yq '.releaseName')
-chartRepo=$(echo "$yaml_config" | yq '.chartRepo')
-chartName=$(echo "$yaml_config" | yq '.chartName')
+# Try nameOverride first
+nameOverride=$(yq '.nameOverride // ""' "$valuesFile" 2>/dev/null)
+if [[ -n "$nameOverride" ]]; then
+    serviceName="$nameOverride"
+    echo "Service name from nameOverride: $serviceName"
+fi
 
-validate_field() {
-    local field_name="$1"
-    local field_value="$2"
-    
-    if [[ -z "$field_value" || "$field_value" == "null" ]]; then
-        echo "Missing service.$field_name"
-        return 1
+# If not found, try fullnameOverride
+if [[ -z "$serviceName" ]]; then
+    fullnameOverride=$(yq '.fullnameOverride // ""' "$valuesFile" 2>/dev/null)
+    if [[ -n "$fullnameOverride" ]]; then
+        serviceName="$fullnameOverride"
+        echo "Service name from fullnameOverride: $serviceName"
     fi
-    return 0
-}
+fi
 
-validate_field "name" "$name" || exit 1
-validate_field "releaseName" "$releaseName" || exit 1
-validate_field "chartRepo" "$chartRepo" || exit 1
-validate_field "chartName" "$chartName" || exit 1
+# If still not found, use ProjectName parameter
+if [[ -z "$serviceName" ]]; then
+    if [[ -n "$ProjectName" ]]; then
+        serviceName="$ProjectName"
+        echo "Service name from ProjectName parameter: $serviceName"
+    fi
+fi
 
+# Last resort: use directory name
+if [[ -z "$serviceName" ]]; then
+    serviceName=$(basename "$baseDir")
+    echo "Service name from directory name: $serviceName"
+fi
+
+# Get chart information from values.yaml
+# Note: In the new structure, chart info might not be in values.yaml
+# We'll try to extract from common locations
+chartName=$(yq '.chart.name // ""' "$valuesFile" 2>/dev/null)
+chartRepo=$(yq '.chart.repository // ""' "$valuesFile" 2>/dev/null)
+releaseName=$(yq '.fullnameOverride // ""' "$valuesFile" 2>/dev/null)
+
+# If releaseName not found, use serviceName
+if [[ -z "$releaseName" ]]; then
+    releaseName="$serviceName"
+fi
+
+# Validation - we need at least serviceName
+if [[ -z "$serviceName" ]]; then
+    echo "Error: Could not determine service name from values.yaml"
+    exit 1
+fi
+
+echo ""
+echo "Configuration extracted from values.yaml:"
+echo "  Service Name: $serviceName"
+echo "  Release Name: $releaseName"
+echo "  Chart Name: ${chartName:-Not specified in values.yaml}"
+echo "  Chart Repo: ${chartRepo:-Not specified in values.yaml}"
+echo ""
+
+if [[ -z "$chartName" ]] || [[ -z "$chartRepo" ]]; then
+    echo "Note: Chart name and/or repository not found in values.yaml"
+    echo "You may need to manually edit kustomization.yaml after generation"
+fi
+
+# Find cluster directory
 if [[ -n "$RootDir" ]]; then
     if [[ ! -d "$RootDir" ]]; then
         echo "Root directory not found: $RootDir"
@@ -111,7 +155,7 @@ if [[ -n "$RootDir" ]]; then
         exit 1
     fi
 else
-    # Logic tìm kiếm cũ (fallback)
+    # Fallback search logic
     find_cluster_root() {
         local current_dir="$1"
         local cluster_name="$2"
@@ -158,11 +202,14 @@ else
     fi
 fi
 
-serviceDir="$clusterPath/$TenantsPath/$name"
+# Create tenant directory
+serviceDir="$clusterPath/$TenantsPath/$serviceName"
 mkdir -p "$serviceDir"
+echo "Creating tenant directory: $serviceDir"
 
 scriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Find template directory
 if [[ -z "$TEMPLATE_DIR" ]]; then
     templatesRoot="$scriptDir/../templates"
     if [[ ! -d "$templatesRoot" ]]; then
@@ -185,6 +232,7 @@ fi
 
 echo "Looking for template files in: $templateDir"
 
+# Find all template files
 templateFiles=()
 while IFS= read -r -d $'\0' file; do
     templateFiles+=("$(basename "$file")")
@@ -201,13 +249,15 @@ for file in "${templateFiles[@]}"; do
     echo "  - $file"
 done
 
+# Define variables for template substitution
 declare -A vars
-vars[SERVICE_NAME]="$name"
+vars[SERVICE_NAME]="$serviceName"
 vars[CHART_NAME]="$chartName"
 vars[CHART_REPO]="$chartRepo"
 vars[RELEASE_NAME]="$releaseName"
 vars[TEMPLATE_NAME]="$TemplateName"
 
+# Template processing function
 process_template() {
     local template="$1"
     local -n vars_ref="$2"
@@ -220,6 +270,7 @@ process_template() {
     echo "$template"
 }
 
+# Process each template file
 for templateFile in "${templateFiles[@]}"; do
     templatePath="$templateDir/$templateFile"
     echo "Processing template: $templateFile"
@@ -234,6 +285,13 @@ for templateFile in "${templateFiles[@]}"; do
     echo "  -> Created: $outputFile"
 done
 
+# Copy values.yaml to tenant directory
+if [[ -f "$valuesFile" ]]; then
+    cp "$valuesFile" "$serviceDir/values.yaml"
+    echo "Copied values.yaml to tenant directory"
+fi
+
+# Check for important generated files
 importantFiles=("namespace.yaml" "kustomization.yaml")
 for importantFile in "${importantFiles[@]}"; do
     if [[ ! -f "$serviceDir/$importantFile" ]]; then
@@ -243,7 +301,10 @@ for importantFile in "${importantFiles[@]}"; do
 done
 
 echo ""
-echo "Tenant created at: $serviceDir"
+echo "========================================="
+echo "Tenant successfully created at: $serviceDir"
+echo "========================================="
+echo ""
 echo "Generated files:"
 ls -la "$serviceDir/"
 

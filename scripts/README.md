@@ -1,307 +1,269 @@
-# STEP 1 – Check Dependencies
+# Hệ thống Deployment Configuration - Documentation
 
-## Mục tiêu
+## Tổng quan
+Hệ thống này quản lý cấu hình deployment Kubernetes theo mô hình GitOps, sử dụng ArgoCD để tự động deploy các service từ cấu hình được version control.
 
-Đảm bảo môi trường đủ công cụ để script chạy an toàn.
+## Cấu trúc thư mục
+```
+project-root/
+├── services/                          # Service configurations
+│   └── [service-name]/
+│       ├── values.yaml               # Main service configuration (source of truth)
+│       ├── .env                      # Environment variables
+│       └── secrets.whitelist        # List of secret variables
+├── cluster-[name]/                   # Cluster configurations
+│   ├── cluster-config.yaml          # Cluster directory structure
+│   ├── services/                    # Service configs within cluster
+│   └── tenants/                     # Generated deployment manifests
+└── scripts/
+    ├── deploy.sh                    # Main deployment script
+    ├── gen-folder.sh               # Generate tenant folder
+    ├── gen-values.sh               # Copy values.yaml
+    └── seal-env.sh                 # Seal environment variables
+```
 
-## Input
+## STEP 1 – Kiểm tra phụ thuộc
 
-* Hệ thống hiện tại (PowerShell environment)
+### Mục tiêu
+Đảm bảo tất cả công cụ cần thiết đã được cài đặt.
 
-## Xử lý
+### Xử lý
+1. Kiểm tra các công cụ bắt buộc:
+   - `yq` (YAML processor)
+   - `kubectl` (Kubernetes CLI)
+   - `kubeseal` (Sealed Secrets encryption)
+   - `kustomize` (Kustomization tool)
 
-1. Kiểm tra module:
+2. Nếu thiếu bất kỳ công cụ nào:
+   - Hiển thị thông báo lỗi chi tiết
+   - Thoát với mã lỗi 1
 
-   * `ConvertFrom-Yaml` (powershell-yaml)
-2. Kiểm tra binary:
+### Output
+- Tiếp tục nếu tất cả công cụ có sẵn
+- Dừng script nếu thiếu công cụ
 
-   * `kubectl`
-   * `kubeseal`
-3. Nếu thiếu bất kỳ dependency nào → `throw error` → `exit 1`
+## STEP 2 – Xác định thư mục gốc dự án
 
-## Output
+### Mục tiêu
+Xác định thư mục gốc của dự án để định vị các thư mục cluster.
 
-* Nếu hợp lệ: tiếp tục script
-* Nếu thiếu: script dừng với message lỗi rõ ràng
+### Xử lý
+1. Duyệt từ thư mục hiện tại lên các thư mục cha
+2. Tìm kiếm:
+   - Thư mục chứa file `.gitignore` HOẶC
+   - Thư mục chứa các thư mục `cluster-*`
 
----
+3. Nếu không tìm thấy:
+   - Yêu cầu người dùng nhập đường dẫn thủ công
+   - Validate đường dẫn hợp lệ
 
-# STEP 2 – Locate Project Root
+### Output
+- `$rootDir`: Đường dẫn thư mục gốc dự án
+- Thoát nếu không xác định được
 
-## Mục tiêu
+## STEP 3 – Chọn Cluster
 
-Xác định thư mục gốc của project (rootDir).
+### Mục tiêu
+Chọn cluster target để deploy service.
 
-## Input
+### Xử lý
+1. Tìm tất cả các thư mục `cluster-*` trong `$rootDir`
+2. Hiển thị danh sách cluster có sẵn
+3. Người dùng nhập tên cluster:
+   - Có thể nhập trực tiếp
+   - Hoặc chọn từ danh sách
 
-* Thư mục hiện tại: `Get-Location`
-
-## Xử lý
-
-1. Gọi hàm `Get-ProjectRoot`
-2. Duyệt ngược lên từng thư mục cha
-3. Kiểm tra điều kiện:
-
-   * tồn tại file `.gitignore`
-4. Khi tìm thấy → gán làm `$rootDir`
-
-## Output
-
-* `$rootDir` (đường dẫn project root)
-* Nếu không tìm thấy → throw error → exit
-
----
-
-# STEP 3 – Service Selection
-
-## Mục tiêu
-
-Xác định service cần thao tác.
-
-## Input
-
-* `$rootDir/services/`
-
-## Xử lý
-
-1. Quét các thư mục con trong:
-
-   ```
-   <rootDir>/services/
-   ```
-2. Lấy danh sách `availableServices`
-3. User nhập `serviceName`
 4. Validate:
+   - Cluster directory tồn tại
+   - File `cluster-config.yaml` tồn tại
 
-   ```
-   services/<serviceName> tồn tại
-   ```
-5. Đọc file:
+### Output
+- `$ClusterName`: Tên cluster đã chọn
+- `$clusterPath`: Đường dẫn đến cluster directory
 
-   ```
-   services/<serviceName>/service.yaml
-   ```
-6. In ra thông tin cơ bản (name, releaseName, chartRepo, …)
+## STEP 4 – Đọc cấu hình cluster
 
-## Output
+### Mục tiêu
+Đọc cấu trúc thư mục từ file `cluster-config.yaml`.
 
-* `$serviceName`
-* `$servicePath = services/<serviceName>`
-* `$serviceConfig` (object từ service.yaml)
+### Xử lý
+1. Đọc file `$clusterPath/cluster-config.yaml`
+2. Trích xuất các đường dẫn:
+   - `servicesPath`: Đường dẫn đến service configurations
+   - `tenantsPath`: Đường dẫn đến generated tenants
+   - `certPath`: Đường dẫn đến certificate file
 
----
+3. Xây dựng đường dẫn đầy đủ
 
-# STEP 4 – Cluster Selection
+### Output
+- `$clusterServicesFullPath`: Đường dẫn đầy đủ đến service configs
+- `$clusterTenantsFullPath`: Đường dẫn đầy đủ đến tenants
+- `$clusterCertFullPath`: Đường dẫn đầy đủ đến certificate
 
-## Mục tiêu
+## STEP 5 – Chọn Service
 
-Xác định cluster target để deploy.
+### Mục tiêu
+Chọn service cần deploy từ danh sách có sẵn trong cluster.
 
-## Input
+### Xử lý
+1. Liệt kê tất cả các service trong `$clusterServicesFullPath`
+2. Hiển thị danh sách service
+3. Người dùng nhập tên service
+4. Validate:
+   - Service directory tồn tại
+   - File `values.yaml` tồn tại trong service directory
 
-* `$rootDir`
+### Output
+- `$ProjectName`: Tên service đã chọn
+- `$serviceDir`: Đường dẫn đến service directory
 
-## Xử lý
+## STEP 6 – Xác định tên service
 
-1. Quét các thư mục:
+### Mục tiêu
+Xác định tên service cuối cùng từ file `values.yaml`.
 
-   ```
-   cluster-*
-   ```
+### Xử lý
+1. Đọc file `$serviceDir/values.yaml`
+2. Trích xuất theo thứ tự ưu tiên:
+   - `nameOverride`: Nếu có
+   - `fullnameOverride`: Nếu không có `nameOverride`
+   - Tên thư mục: Nếu cả hai đều không có
 
-   ví dụ:
+3. Validate tên service không rỗng
 
-   * cluster-dev
-   * cluster-staging
-   * cluster-prod
-2. Hiển thị danh sách cluster
-3. User nhập `clusterName`
-4. Validate tồn tại:
+### Output
+- `$serviceName`: Tên service đã xác định
+- `$namespace`: Namespace (mặc định bằng tên service)
 
-   ```
-   <rootDir>/<clusterName>
-   ```
+## STEP 7 – Chọn Template
 
-## Output
+### Mục tiêu
+Chọn template để generate deployment manifests.
 
-* `$clusterName`
-* `$clusterPath = <rootDir>/<clusterName>`
+### Xử lý
+1. Liệt kê tất cả các template trong `templates/` directory
+2. Hiển thị danh sách template có sẵn
+3. Người dùng chọn template:
+   - Có thể nhập trực tiếp
+   - Hoặc sử dụng giá trị mặc định "dev"
 
----
+4. Validate:
+   - Template directory tồn tại
+   - Có file `namespace.tpl.yaml` và `kustomization.tpl.yaml`
 
-# STEP 5 – Certificate Selection (kubeseal cert)
+### Output
+- `$TemplateName`: Tên template đã chọn
+- `$templateDir`: Đường dẫn đến template directory
 
-## Mục tiêu
+## STEP 8 – Chọn Certificate
 
-Chọn certificate để seal secret.
+### Mục tiêu
+Chọn certificate để encrypt Sealed Secrets.
 
-## Input
+### Xử lý
+1. Ưu tiên sử dụng certificate từ cluster config
+2. Nếu không có trong cluster config:
+   - Kiểm tra certificate từ tham số `--CertPath`
+   - Hoặc yêu cầu người dùng chỉ định
 
-* `$rootDir`
+3. Validate:
+   - File certificate tồn tại
+   - Định dạng hợp lệ (PEM)
 
-## Xử lý
+### Output
+- `$CertPath`: Đường dẫn đầy đủ đến certificate file
 
-1. Tìm tất cả file:
+## STEP 9 – Thực thi Deployment
 
-   ```
-   *.pem
-   ```
+### Mục tiêu
+Generate tất cả các file cần thiết cho deployment.
 
-   trong `$rootDir`
-2. Nếu không có file nào → throw error
-3. Nếu có:
+### Xử lý
+#### 9.1 – Generate tenant folder structure
+1. Gọi `gen-folder.sh` với các tham số:
+   - `--RootDir`
+   - `--ClusterName`
+   - `--TenantsPath`
+   - `--ProjectName`
+   - `--TemplateName`
 
-   * 1 file → auto select
-   * nhiều file → user chọn theo index
-4. Validate file tồn tại
+2. Tạo thư mục tenant và generate:
+   - `namespace.yaml`
+   - `kustomization.yaml`
+   - Copy `values.yaml`
 
-## Output
+#### 9.2 – Copy values.yaml
+1. Gọi `gen-values.sh` để copy `values.yaml` từ service directory sang tenant directory
 
-* `$certPath` (đường dẫn file .pem hợp lệ)
+#### 9.3 – Seal environment variables
+1. Gọi `seal-env.sh` để:
+   - Đọc `.env` và `secrets.whitelist`
+   - Generate `configmap.yaml` và `sealed-secret.yaml`
+   - Update `kustomization.yaml`
 
----
+### Output
+- Thư mục tenant hoàn chỉnh với tất cả các file cần thiết
 
-# STEP 6 – Generate Tenant Folder (gen-folder)
+## STEP 10 – Tổng kết
 
-## Mục tiêu
+### Mục tiêu
+Hiển thị thông tin deployment đã được tạo.
 
-Tạo skeleton tenant cho service trong cluster.
+### Xử lý
+1. Liệt kê tất cả các file đã generate
+2. Hiển thị thông tin chi tiết:
+   - Tên service
+   - Cluster target
+   - Namespace
+   - Template sử dụng
+   - Đường dẫn output
 
-## Input
+3. Hiển thị kích thước và trạng thái của từng file
 
-* `$serviceName`
-* `$clusterName`
-* `services/<serviceName>/service.yaml`
-* `$rootDir`
+### Output
+- Thông tin deployment summary
+- Danh sách file đã generate với kích thước
 
-## Xử lý
-
-1. Đứng tại:
-
-   ```
-   services/<serviceName>
-   ```
-2. Đọc `service.yaml`
-3. Xác định:
-
-   ```
-   rootDir
-   clusterPath = <rootDir>/<clusterName>
-   tenantDir = <clusterPath>/tenants/<serviceName>
-   ```
-4. Tạo thư mục:
-
-   ```
-   tenants/<serviceName>
-   ```
-5. Sinh:
-
-   * `namespace.yaml` (theo service name)
-   * `kustomization.yaml` (theo releaseName, chartRepo, version, values.yaml)
-
-## Output
-
-```
-cluster-xxx/
-  tenants/
-    <service-name>/
-      namespace.yaml
-      kustomization.yaml
-```
-
----
-
-# STEP 7 – Generate values.yaml (gen-values)
-
-## Mục tiêu
-
-Sinh file values.yaml cho Helm chart.
-
-## Input
-
-* `services/<service-name>/service.yaml`
-* `$rootDir`
-* `$clusterName`
-
-## Xử lý
-
-1. Đứng tại `services/<project>`
-2. Đọc `service.yaml`
-3. Xác định:
-
-   ```
-   rootDir
-   clusterDir
-   tenantDir
-   ```
-4. Lấy từng giá trị config (có default)
-5. Ghép thành template `values.yaml`
-6. Ghi file vào tenantDir
-
-## Output
+## Workflow tổng quát
 
 ```
-cluster-xxx/
-  tenants/<service>/
-    values.yaml
+1. Check Dependencies → 2. Find Project Root → 3. Select Cluster → 4. Read Cluster Config
+↓
+5. Select Service → 6. Determine Service Name → 7. Select Template → 8. Select Certificate
+↓
+9.1 Generate Tenant Folder → 9.2 Copy values.yaml → 9.3 Seal Environment Variables
+↓
+10. Display Deployment Summary
 ```
 
----
+## Cấu hình file values.yaml mẫu
 
-# STEP 8 – Seal Secret & Generate ConfigMap (seal-env)
+```yaml
+nameOverride: "livekit-server"
+fullnameOverride: ""
 
-## Mục tiêu
+replicaCount: 1
 
-Chuyển `.env` thành ConfigMap + SealedSecret an toàn cho GitOps.
+image:
+  repository: livekit/livekit-server
+  tag: "v1.6.0"
+  pullPolicy: IfNotPresent
 
-## Input
-
-* `services/<project>/.env`
-* `services/<project>/secrets.whitelist`
-* `$certPath`
-* `$tenantDir`
-* `kustomization.yaml`
-
-## Xử lý
-
-1. Đứng ở `services/<project>`
-2. Đọc `.env` + `secrets.whitelist`
-3. Phân loại:
-
-   * config variables
-   * secret variables
-4. Tạo ConfigMap YAML (kubectl)
-5. Tạo Secret YAML (kubectl)
-6. Seal Secret bằng `kubeseal + cert`
-7. Update `kustomization.yaml` thêm:
-
-   ```
-   configmap.yaml
-   sealed-secret.yaml
-   ```
-8. Xóa file tạm
-
-## Output
-
-```
-cluster-xxx/
-  tenants/<service>/
-    configmap.yaml
-    sealed-secret.yaml
-    kustomization.yaml (updated)
+# ... các cấu hình khác
 ```
 
----
+## File hỗ trợ trong service directory
+1. **values.yaml** (bắt buộc): Cấu hình chính của service
+2. **.env** (tùy chọn): Environment variables
+3. **secrets.whitelist** (tùy chọn): Danh sách biến môi trường cần encrypt
 
-# Tổng kết ngắn gọn (pipeline)
+## Các mode chạy
+1. **Interactive mode**: Chạy script không có tham số, nhập tương tác
+2. **Parameter mode**: Chỉ định tham số qua command line
+3. **Dry-run mode**: Chỉ hiển thị các lệnh sẽ thực thi, không tạo file
 
-```
-STEP 1: Check tools
-STEP 2: Find rootDir
-STEP 3: Select service
-STEP 4: Select cluster
-STEP 5: Select cert
-STEP 6: Gen tenant folder
-STEP 7: Gen values.yaml
-STEP 8: Seal env -> configmap + sealed-secret
-```
+## Security Notes
+- Secret values được encrypt với kubeseal
+- Chỉ cluster target mới có thể decrypt
+- `sealed-secret.yaml` an toàn để commit vào Git
+- Không bao giờ commit file `.env` gốc

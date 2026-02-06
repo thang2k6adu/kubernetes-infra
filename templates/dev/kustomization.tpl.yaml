@@ -7,9 +7,9 @@ resources:
   - namespace.yaml
 
 helmCharts:
-  - name: {{CHART_NAME}}
-    repo: {{CHART_REPO}}
+  - name: backend-service-chart
+    repo: https://thang2k6adu.github.io/backend-service-charts
     version: 0.1.0
-    releaseName: {{RELEASE_NAME}}
+    releaseName: dev
     namespace: {{SERVICE_NAME}}
     valuesFile: values.yaml

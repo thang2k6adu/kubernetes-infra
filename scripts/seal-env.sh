@@ -108,24 +108,50 @@ if [[ -z "$ProjectName" ]]; then
   exit 1
 fi
 
-# Validate service directory
+# Validate service directory - now checking for values.yaml instead of service.yaml
 serviceDir="$clusterServicesFullPath/$ProjectName"
-if [[ ! -d "$serviceDir" ]] || [[ ! -f "$serviceDir/service.yaml" ]]; then
-  echo "Service configuration not found in cluster $ClusterName: $serviceDir"
-  echo "Expected to find service.yaml in the directory"
+if [[ ! -d "$serviceDir" ]]; then
+  echo "Service directory not found in cluster $ClusterName: $serviceDir"
+  exit 1
+fi
+
+# Check for values.yaml (required) and .env/secrets.whitelist (optional)
+if [[ ! -f "$serviceDir/values.yaml" ]]; then
+  echo "values.yaml not found in service directory: $serviceDir"
   exit 1
 fi
 
 echo "Service configuration directory validated: $serviceDir"
 
-# Get service name from service.yaml
-serviceName=$(yq '.service.name' "$serviceDir/service.yaml")
+# Get service name from values.yaml
+# Priority: 1. nameOverride, 2. fullnameOverride, 3. ProjectName parameter
+serviceName=""
+nameOverride=$(yq '.nameOverride // ""' "$serviceDir/values.yaml" 2>/dev/null)
+if [[ -n "$nameOverride" ]]; then
+  serviceName="$nameOverride"
+fi
+
+if [[ -z "$serviceName" ]]; then
+  fullnameOverride=$(yq '.fullnameOverride // ""' "$serviceDir/values.yaml" 2>/dev/null)
+  if [[ -n "$fullnameOverride" ]]; then
+    serviceName="$fullnameOverride"
+  fi
+fi
+
+if [[ -z "$serviceName" ]]; then
+  # Use ProjectName as fallback
+  serviceName="$ProjectName"
+fi
+
 namespace="$serviceName"
 
-if [[ -z "$serviceName" || "$serviceName" == "null" ]]; then
-  echo "service.name is required in service.yaml"
+if [[ -z "$serviceName" ]]; then
+  echo "Could not determine service name from values.yaml"
+  echo "Please set nameOverride or fullnameOverride in values.yaml"
   exit 1
 fi
+
+echo "Service name determined: $serviceName"
 
 # Validate certificate - ƯU TIÊN: từ cluster config trước
 if [[ -z "$CertPath" ]]; then
@@ -155,19 +181,90 @@ if [[ ! -d "$tenantDir" ]]; then
   exit 1
 fi
 
+# Check for environment files
 envFile="$serviceDir/.env"
 whitelistFile="$serviceDir/secrets.whitelist"
 
 if [[ ! -f "$envFile" ]]; then
-  echo ".env file not found in $serviceDir"
-  echo "Please create a .env file with your environment variables."
-  exit 1
+  echo "Warning: .env file not found in $serviceDir"
+  echo "No environment variables to seal."
+  echo "If you need to seal secrets, please create a .env file."
+  
+  # Create empty configmap.yaml if no .env file
+  configMapName="${serviceName}-config"
+  
+  echo "Creating empty ConfigMap..."
+  kubectl create configmap "$configMapName" \
+    -n "$namespace" \
+    --dry-run=client \
+    -o yaml > "$tenantDir/configmap.yaml"
+  
+  echo "Updating kustomization.yaml..."
+  
+  kustomizationFile="$tenantDir/kustomization.yaml"
+  if [[ -f "$kustomizationFile" ]]; then
+    # Remove existing configmap.yaml reference if exists
+    tmpFile="$tenantDir/kustomization.tmp"
+    grep -v "configmap.yaml" "$kustomizationFile" | grep -v "sealed-secret.yaml" > "$tmpFile"
+    # Add configmap.yaml back
+    echo "resources:" >> "$tmpFile"
+    echo "  - configmap.yaml" >> "$tmpFile"
+    mv "$tmpFile" "$kustomizationFile"
+  fi
+  
+  echo "No secrets to seal. Operation completed."
+  exit 0
 fi
 
 if [[ ! -f "$whitelistFile" ]]; then
-  echo "secrets.whitelist file not found in $serviceDir"
-  echo "Please create a secrets.whitelist file listing variables that should be sealed as secrets."
-  exit 1
+  echo "Warning: secrets.whitelist file not found in $serviceDir"
+  echo "No secrets will be sealed. If you have secrets to seal, create a secrets.whitelist file."
+  echo "All environment variables will be stored in ConfigMap (not encrypted)."
+  
+  # Process .env file but treat everything as config (not secret)
+  envLines=$(grep -v '^\s*#' "$envFile" | grep -v '^\s*$')
+  configData=()
+  varCount=0
+  
+  while IFS= read -r line; do
+    if [[ "$line" =~ ^([^=]+)=(.*)$ ]]; then
+      key="$(echo "${BASH_REMATCH[1]}" | xargs)"
+      value="${BASH_REMATCH[2]}"
+      ((++varCount))
+      configData+=("$key=$value")
+    else
+      echo "Skipping invalid line in .env: $line"
+    fi
+  done <<< "$envLines"
+  
+  configMapName="${serviceName}-config"
+  
+  printf "%s\n" "${configData[@]}" > "$tenantDir/config.env"
+  
+  echo "Creating ConfigMap (${#configData[@]} variables)..."
+  kubectl create configmap "$configMapName" \
+    --from-env-file="$tenantDir/config.env" \
+    -n "$namespace" \
+    --dry-run=client \
+    -o yaml > "$tenantDir/configmap.yaml"
+  
+  rm -f "$tenantDir/config.env"
+  
+  echo "Updating kustomization.yaml..."
+  
+  kustomizationFile="$tenantDir/kustomization.yaml"
+  if [[ -f "$kustomizationFile" ]]; then
+    # Remove existing configmap.yaml reference if exists
+    tmpFile="$tenantDir/kustomization.tmp"
+    grep -v "configmap.yaml" "$kustomizationFile" | grep -v "sealed-secret.yaml" > "$tmpFile"
+    # Add configmap.yaml back
+    echo "resources:" >> "$tmpFile"
+    echo "  - configmap.yaml" >> "$tmpFile"
+    mv "$tmpFile" "$kustomizationFile"
+  fi
+  
+  echo "Operation completed. No secrets were sealed."
+  exit 0
 fi
 
 baseName="${serviceName%-api}"
@@ -186,7 +283,7 @@ WriteSection "Step 3/3: Sealing Environment Variables"
 originalLocation="$(pwd)"
 
 cleanup() {
-  rm -f config.env secret.env secret.yaml 2>/dev/null || true
+  rm -f "$tenantDir/config.env" "$tenantDir/secret.env" "$tenantDir/secret.yaml" 2>/dev/null || true
 }
 trap cleanup ERR
 
