@@ -75,7 +75,7 @@ livekit:
 
 # Ingress configuration
 ingress:
-  enabled: false
+  enabled: true
   className: ""
   annotations: {}
   hosts:
