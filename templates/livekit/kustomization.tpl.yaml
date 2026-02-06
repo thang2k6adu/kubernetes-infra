@@ -1,17 +1,15 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: livekit-server
+namespace: {{SERVICE_NAME}}
 
 resources:
   - namespace.yaml
-  - sealed-secret.yaml
-  - configmap.yaml
-  
+
 helmCharts:
   - name: livekit-server
     repo: https://helm.livekit.io
     version: 1.16.0
     releaseName: dev
-    namespace: livekit-server
+    namespace: {{SERVICE_NAME}}
     valuesFile: values.yaml
