@@ -23,6 +23,8 @@ terminationGracePeriodSeconds: 18000
 livekit:
   port: 7880
   log_level: info
+  # bắt buộc phải có cái này
+  key_file: "keys.yaml"
   rtc:
     tcp_port: 7881
     port_range_start: 50000
@@ -58,13 +60,10 @@ livekit:
 # Bảo livekit đọc config từ secret tên là livekit-server-secret
 # Nó tự tìm key LIVEKIT_KEYS
 storeKeysInSecret:
-  # Nếu bật nó sẽ tự tạo secret, tắt đi để dùng sealed secret đã tạo sẵn
-  enabled: false
-  # Sử dụng name trong meta data của secret
+  enabled: true
   existingSecret: "livekit-server-secret"
-  # Thêm cấu hình cho secret, forget it, ko cần quan tâm
-  secretAnnotations: {}
-  labels: {}
+  keys: {}
+
 
 # Thêm các cấu hình monitoring
 prometheus:
@@ -82,7 +81,7 @@ health:
 # Ingress configuration
 ingress:
   enabled: true
-  className: "nginx"
+  className: ""
   annotations: {}
   hosts:
     - host: livekit.thang2k6adu.xyz
@@ -203,11 +202,6 @@ env:
     value: "true"
   - name: LIVEKIT_DEVELOPMENT
     value: "false"
-  - name: LIVEKIT_KEYS
-    valueFrom:
-      secretKeyRef:
-        name: livekit-server-secret
-        key: LIVEKIT_KEYS
 
 initContainers: []
 sidecars: []

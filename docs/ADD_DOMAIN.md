@@ -323,7 +323,7 @@ nginx -t && systemctl reload nginx
 ### Remove domain
 
 ```bash
-DOMAIN=argocd.thang2k6adu.xyz
+DOMAIN=livekit.thang2k6adu.xyz
 
 sudo rm -f /etc/nginx/sites-enabled/$DOMAIN
 sudo rm -f /etc/nginx/sites-available/$DOMAIN
