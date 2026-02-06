@@ -90,10 +90,10 @@ ingress:
           pathType: Prefix
 
 
-service:
-  type: ClusterIP
-  port: 7880
-  annotations: {}
+# service:
+#   type: ClusterIP
+#   port: 7881
+#   annotations: {}
     # cloud.google.com/load-balancer-type: "Internal" # GCP internal LB
     # service.beta.kubernetes.io/aws-load-balancer-type: "nlb" # AWS NLB
   

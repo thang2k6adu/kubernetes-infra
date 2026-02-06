@@ -13,7 +13,7 @@ data:
   JWT_EXPIRES_IN: 2h
   JWT_REFRESH_EXPIRES_IN: 7d
   LIVEKIT_API_KEY: devkey
-  LIVEKIT_API_SECRET: devsecret123
+  LIVEKIT_URL: wss://livekit.thang2k6adu.xyz
   MAIL_FROM: noreply@example.com
   MAIL_HOST: smtp.gmail.com
   MAIL_PORT: "587"
