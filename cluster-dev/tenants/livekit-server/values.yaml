@@ -59,8 +59,7 @@ livekit:
 # Nó tự tìm key LIVEKIT_KEYS
 storeKeysInSecret:
   enabled: true
-  # Sử dụng name trong meta data của secret
-  # existingSecret: "livekit-server-secret"
+  existingSecret: ""
   keys:
     devkey: "9f3c1a6b8d2e4f7a9c1d3e5f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"
 
