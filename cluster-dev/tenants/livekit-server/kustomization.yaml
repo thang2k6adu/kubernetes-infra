@@ -4,9 +4,9 @@ kind: Kustomization
 namespace: livekit-server
 
 resources:
-  - namespace.yaml
-  - sealed-secret.yaml
   - configmap.yaml
+  - sealed-secret.yaml
+  - namespace.yaml
 
 helmCharts:
   - name: livekit-server

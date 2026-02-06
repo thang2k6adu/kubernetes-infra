@@ -3,6 +3,10 @@ fullnameOverride: ""
 
 replicaCount: 1
 
+# Tắt cái default của helm chart gốc
+# ko tắt nó sẽ lấy của cái khác (vd pp191225)
+envFrom: []
+
 image:
   repository: livekit/livekit-server
   tag: "latest"  # Nên ghim version cụ thể, VD: "v1.6.0"
@@ -51,13 +55,16 @@ livekit:
     # Thêm cấu hình cho secret, forget it, ko cần quan tâm
     secretAnnotations: {}
     labels: {}
+    
   
   # Thêm các cấu hình monitoring
   prometheus:
     enabled: false
     port: 7882
   
-  # Health checks
+  # enable Health checks
+  # if dont, below health check config will be fail because
+  # livekit server dont have /health endpoint
   health:
     enabled: true
     port: 8080
@@ -76,7 +83,7 @@ livekit:
 # Ingress configuration
 ingress:
   enabled: true
-  className: ""
+  className: "nginx"
   annotations: {}
   hosts:
     - host: livekit.thang2k6adu.xyz
@@ -155,24 +162,6 @@ securityContext:
   capabilities:
     drop:
       - ALL
-
-livenessProbe:
-  enabled: true
-  initialDelaySeconds: 30
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 3
-  successThreshold: 1
-  path: /health
-
-readinessProbe:
-  enabled: true
-  initialDelaySeconds: 5
-  periodSeconds: 5
-  timeoutSeconds: 3
-  failureThreshold: 3
-  successThreshold: 1
-  path: /health
 
 tolerations: []
 
