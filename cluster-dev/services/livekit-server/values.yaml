@@ -48,7 +48,7 @@ livekit:
   # Bảo livekit đọc config từ secret tên là livekit-server-secret
   # Nó tự tìm key LIVEKIT_KEYS
   storeKeysInSecret:
-    enabled: false
+    enabled: true
     # Sử dụng name trong meta data của secret
     existingSecret: "livekit-server-secret"
     
