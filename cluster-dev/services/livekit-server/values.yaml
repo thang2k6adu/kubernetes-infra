@@ -62,26 +62,10 @@ livekit:
     enabled: false
     port: 7882
   
-  # enable Health checks
-  health:
-    enabled: true  # BẬT lại
-    port: 8080
-    path: "/health"
-    # Thêm probes config ở đây
-    livenessProbe:
-      enabled: true
-      initialDelaySeconds: 30
-      periodSeconds: 10
-      timeoutSeconds: 5
-      failureThreshold: 3
-      successThreshold: 1
-    readinessProbe:
-      enabled: true
-      initialDelaySeconds: 5
-      periodSeconds: 5
-      timeoutSeconds: 3
-      failureThreshold: 3
-      successThreshold: 1
+  # health:
+  #   enabled: false 
+  #   port: 8080
+  #   path: "/health"
   
   turn:
     enabled: false
@@ -176,25 +160,25 @@ securityContext:
     drop:
       - ALL
 
-# livenessProbe:
-#   httpGet:
-#     path: /health
-#     port: 8080
-#   initialDelaySeconds: 30
-#   periodSeconds: 10
-#   timeoutSeconds: 5
-#   failureThreshold: 3
-#   successThreshold: 1
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
 
-# readinessProbe:
-#   httpGet:
-#     path: /health
-#     port: 8080
-#   initialDelaySeconds: 5
-#   periodSeconds: 5
-#   timeoutSeconds: 3
-#   failureThreshold: 3
-#   successThreshold: 1
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
 
 tolerations: []
 
