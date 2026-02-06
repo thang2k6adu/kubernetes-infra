@@ -81,7 +81,7 @@ livekit:
 # Ingress configuration
 ingress:
   enabled: true
-  className: ""
+  className: "nginx"
   annotations: {}
   hosts:
     - host: livekit.thang2k6adu.xyz
@@ -162,24 +162,22 @@ securityContext:
       - ALL
 
 livenessProbe:
-  httpGet:
-    path: /health
-    port: 8080
+  enabled: true
   initialDelaySeconds: 30
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 3
   successThreshold: 1
+  path: /health
 
 readinessProbe:
-  httpGet:
-    path: /health
-    port: 8080
+  enabled: true
   initialDelaySeconds: 5
   periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 3
   successThreshold: 1
+  path: /health
 
 tolerations: []
 
