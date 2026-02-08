@@ -66,6 +66,27 @@ server 10.10.10.12:30080;
 
 ---
 
+## **. Mở file cấu hình chính của Nginx (VPX)
+
+```bash
+sudo nano /etc/nginx/nginx.conf
+```
+
+Tìm trong block `http {}` và thêm đoạn sau **trước các dòng `include`**:
+
+```nginx
+## Virtual Host Configs
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    '' close;
+}
+
+include /etc/nginx/conf.d/*.conf;
+include /etc/nginx/sites-enabled/*;
+```
+
+---
+
 ### 3. Tạo backend list riêng (mỗi cluster 1 tên riêng)
 
 ```bash

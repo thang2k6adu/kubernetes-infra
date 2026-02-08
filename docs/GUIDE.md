@@ -12,6 +12,7 @@
 
 6. Access `ADD_DOMAIN.md` to setup the domain
 
+7. Access `NOTICE.md` to know how ArgoCD Image updater be set up
 ---
 
 ### Cleanup unused resources
