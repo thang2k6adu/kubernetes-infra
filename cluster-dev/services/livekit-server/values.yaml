@@ -28,7 +28,7 @@ livekit:
   rtc:
     tcp_port: 7881
     use_external_ip: true
-    external_ip: "13.212.50.46" 
+    node_ip: "13.212.50.46" 
     port_range_start: 50000
     port_range_end: 60000
     # STUN free của google
