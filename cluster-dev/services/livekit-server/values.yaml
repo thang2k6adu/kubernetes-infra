@@ -27,11 +27,10 @@ livekit:
   key_file: "keys.yaml"
   rtc:
     tcp_port: 7881
+    use_external_ip: true
+    external_ip: "13.212.50.46" 
     port_range_start: 50000
     port_range_end: 60000
-    # Ask STUN to get external IP (public IP)
-    use_external_ip: true
-    external_ip: "13.212.50.46"  # REAL PUBLIC IP of your server (If use reverse proxy / LB, set to that IP)
     # STUN free của google
     stun_servers:
       - "stun.l.google.com:19302"

@@ -211,7 +211,7 @@ cat >> $OUTPUT <<EOF
 # ──────────────────────────────────────────────────────
 virtual_server $PUBLIC_IP $p {
     delay_loop 5        # Health check every 5 seconds
-    lb_algo sh          # Source Hashing (maintain session)
+    lb_algo rr          # Source Hashing (maintain session)
     lb_kind NAT         # NAT mode
     protocol UDP        # UDP traffic
 
