@@ -225,7 +225,7 @@ cat >> $OUTPUT <<EOF
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry  3                    # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
@@ -368,7 +368,7 @@ nc -u -v 13.212.50.46 50034
 TCP_CHECK {
     connect_port 7880           # LiveKit signaling port
     connect_timeout 3           # Timeout 3 seconds
-    nb_get_retry 3              # Retry 3 times
+    retry 3              # Retry 3 times
     delay_before_retry 3        # Wait 3 seconds between retries
 }
 ```
@@ -608,7 +608,7 @@ virtual_server 13.212.50.46 50000 {
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry 3              # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
@@ -617,7 +617,7 @@ virtual_server 13.212.50.46 50000 {
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry 3              # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
@@ -626,7 +626,7 @@ virtual_server 13.212.50.46 50000 {
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry 3              # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
@@ -646,7 +646,7 @@ virtual_server 13.212.50.46 50001 {
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry 3              # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
@@ -655,7 +655,7 @@ virtual_server 13.212.50.46 50001 {
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry 3              # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
@@ -664,7 +664,7 @@ virtual_server 13.212.50.46 50001 {
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry 3              # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
@@ -687,7 +687,7 @@ virtual_server 13.212.50.46 60000 {
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry 3              # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
@@ -696,7 +696,7 @@ virtual_server 13.212.50.46 60000 {
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry 3              # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
@@ -705,7 +705,7 @@ virtual_server 13.212.50.46 60000 {
         TCP_CHECK {
             connect_port 7880           # Health check TCP 7880
             connect_timeout 3           # Timeout 3 seconds
-            nb_get_retry 3              # Retry 3 times
+            retry 3              # Retry 3 times
             delay_before_retry 3        # Wait 3 seconds between retries
         }
     }
