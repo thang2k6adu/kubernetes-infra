@@ -823,3 +823,21 @@ FWM  1 rr
   -> 10.10.20.12:0                Masq    1      0          3
   -> 10.10.20.13:0                Masq    1      0          2
 ```
+
+
+# 1. Tạo một routing table mới (ví dụ tên là vpn_route)
+echo "200 vpn_route" | sudo tee -a /etc/iproute2/rt_tables
+
+# 2. Trỏ default gateway của table này về IP của con VPS (trong mạng WireGuard)
+# Giả sử IP VPN của VPS là 10.10.20.1, interface là wg0
+sudo ip route add default via 10.10.20.1 dev wg0 table 200
+
+# 3. Đánh dấu các gói tin UDP chui ra từ cổng 50000-60000 của LiveKit
+sudo iptables -t mangle -A OUTPUT -p udp --sport 50000:60000 -j MARK --set-mark 2
+
+# 4. Ép các gói bị đánh dấu phải đi theo cái table 200 vừa tạo
+sudo ip rule add fwmark 2 table 200
+
+
+vps
+sudo iptables -t nat -A POSTROUTING -o wg0 -j MASQUERADE

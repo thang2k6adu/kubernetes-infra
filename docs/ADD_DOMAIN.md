@@ -91,7 +91,7 @@ include /etc/nginx/sites-enabled/*;
 
 ```bash
 sudo mkdir -p /etc/nginx/backends
-sudo nano /etc/nginx/backends/cluster-prod.conf #sửa thành cluster chuẩn nhé
+sudo nano /etc/nginx/backends/cluster-dev.conf #sửa thành cluster chuẩn nhé
 ```
 
 **Nội dung `/etc/nginx/backends/cluster-prod.conf`:**
