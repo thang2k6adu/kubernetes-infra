@@ -38,8 +38,6 @@ livekit:
   redis:
     enabled: true
     address: "alert-urchin-60909.upstash.io:6379"
-    passwordSecret: livekit-server-secret
-    passwordSecretKey: REDIS_PASSWORD
     use_tls: true # Upstash Redis chỉ hỗ trợ TLS
     db: 0
   
@@ -198,6 +196,11 @@ env:
     value: "true"
   - name: LIVEKIT_DEVELOPMENT
     value: "false"
+  - name: LIVEKIT_REDIS_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: livekit-server-secret
+        key: REDIS_PASSWORD
 
 initContainers: []
 sidecars: []
