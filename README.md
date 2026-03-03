@@ -64,7 +64,7 @@ Install the Argo CD first to apply. Don't worry, after that all resources will b
 
 ```shell
 kubectl create namespace argocd
-kubectl apply  --server-side --force-conflicts -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+kubectl apply  --server-side -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
 ### Step 2: Apply the Repository
@@ -72,7 +72,7 @@ kubectl apply  --server-side --force-conflicts -n argocd -f https://raw.githubus
 Then, just apply this repo:
 
 ```shell
-kubectl apply --server-side --force-conflicts -k https://github.com/thang2k6adu/kubernetes-infra/cluster-prod/bootstrap/overlays/default
+kubectl apply --server-side -k https://github.com/thang2k6adu/kubernetes-infra/cluster-prod/bootstrap/overlays/default
 ```
 
 ### Step 3: Verify Applications
@@ -214,5 +214,5 @@ From the repository root, run the deployment script:
 
 creat a seal secret
 
-kubeseal --cert cluster-dev/pub-cert.pem -o yaml \
+kubeseal --cert cluster-prod/pub-cert.pem -o yaml \
 < secrets.yaml > sealed-secrets.yaml
