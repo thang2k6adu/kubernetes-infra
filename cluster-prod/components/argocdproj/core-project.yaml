@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: core
+  namespace: argocd
+spec:
+  description: Core infrastructure project (full access with blacklist)
+
+  sourceRepos:
+    - https://github.com/thang2k6adu/kubernetes-infra
+
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+
+  clusterResourceBlacklist:
+    - group: ""
+      kind: Node
+    - group: ""
+      kind: PersistentVolume
+    - group: storage.k8s.io
+      kind: StorageClass
+    - group: policy
+      kind: PodSecurityPolicy
+    - group: security.openshift.io
+      kind: SecurityContextConstraints
+
+  namespaceResourceBlacklist:
+    - group: ""
+      kind: Pod
+    - group: ""
+      kind: ReplicationController
+    - group: ""
+      kind: Endpoints

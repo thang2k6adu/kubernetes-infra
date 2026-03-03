@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/thang2k6adu/kubernetes-infra
+        revision: main
+        directories:
+          - path: cluster-dev/core/*
+  template:
+    metadata:
+      name: "{{path.basename}}"
+    spec:
+      project: core
+      syncPolicy:
+        syncOptions:
+          - ServerSideApply=true
+          - CreateNamespace=true
+        automated:
+          prune: true
+          selfHeal: true
+        retry:
+          limit: 15
+          backoff:
+            duration: 15s
+            factor: 2
+            maxDuration: 5m
+      source:
+        repoURL: https://github.com/thang2k6adu/kubernetes-infra
+        targetRevision: main
+        path: "{{path}}"
+      destination:
+        server: https://kubernetes.default.svc

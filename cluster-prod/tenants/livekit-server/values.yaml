@@ -1,0 +1,236 @@
+nameOverride: "livekit-server"
+fullnameOverride: ""
+
+replicaCount: 1
+
+# Tắt cái default của helm chart gốc
+# ko tắt nó sẽ lấy của cái khác (vd pp191225)
+envFrom: []
+
+image:
+  repository: livekit/livekit-server
+  tag: "latest"  # Nên ghim version cụ thể, VD: "v1.6.0"
+  pullPolicy: IfNotPresent
+  # Thêm imagePullSecrets nếu dùng private registry
+  # pullSecrets:
+  #   - name: regcred
+
+imagePullSecrets: []
+
+terminationGracePeriodSeconds: 18000
+
+# Configuration for livekit
+livekit:
+  port: 7880
+  log_level: info
+  # bắt buộc phải có cái này
+  key_file: "keys.yaml"
+  rtc:
+    tcp_port: 7881
+    use_external_ip: false
+    node_ip: "13.212.50.46" 
+    port_range_start: 50000
+    port_range_end: 60000
+    # STUN free của google
+    stun_servers:
+      - "stun.l.google.com:19302"
+  
+  redis:
+    enabled: false
+    # address: "alert-urchin-60909.upstash.io:6379"
+    # use_tls: true # Upstash Redis chỉ hỗ trợ TLS
+    # db: 0
+  
+  # API keys - KHÔNG nên config trực tiếp ở đây
+  # keys: {}
+    # devkey: "9f3c1a6b8d2e4f7a9c1d3e5f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"
+  
+  turn:
+    enabled: false
+    domain: "turn.thang2k6adu.xyz"
+    tls_port: 5349
+    udp_port: 3478
+    secret: "your-turn-secret"
+    external_tls: false # Để false vì Nginx/LB thường sẽ đẩy thẳng traffic thô ở các port này vào
+
+# Bảo livekit đọc config từ secret tên là livekit-server-secret
+# Nó tự tìm key LIVEKIT_KEYS
+storeKeysInSecret:
+  enabled: true
+  existingSecret: "livekit-server-secret"
+  keys: {}
+
+
+# Thêm các cấu hình monitoring
+prometheus:
+  enabled: false
+  port: 7882
+
+# enable Health checks
+# if dont, below health check config will be fail because
+# livekit server dont have /health endpoint
+health:
+  enabled: true
+  port: 8080
+  path: "/health"
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+  hosts:
+    - host: livekit.thang2k6adu.xyz
+      paths:
+        - path: /
+          pathType: Prefix
+
+
+# service:
+#   type: ClusterIP
+#   port: 7881
+#   annotations: {}
+    # cloud.google.com/load-balancer-type: "Internal" # GCP internal LB
+    # service.beta.kubernetes.io/aws-load-balancer-type: "nlb" # AWS NLB
+  
+# Chỉ bật nếu dùng turn và trên cloud
+# còn có reverse proxy LB riêng thì bỏ qua
+turnLoadbalancer:
+  enabled: false
+  annotations: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 80
+  behavior: {}
+
+# Pod Disruption Budget cho HA
+# Pod Disruption Budget là một tính năng của Kubernetes cho phép bạn chỉ định số lượng pod có thể bị gián đoạn trong một thời gian nhất định.
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  # maxUnavailable: 1
+
+# Thêm label cụ thể cho node chạy LiveKit
+nodeSelector:
+  kubernetes.io/hostname: "k3s-worker-51"
+
+# LiveKit cần CPU nhiều hơn RAM
+resources:
+  requests:
+    cpu: "500m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podHostNetwork: true
+
+podAnnotations:
+  sidecar.istio.io/inject: "false"
+  linkerd.io/inject: disabled
+  # Thêm annotations cho monitoring, Prometheus thường (khác với Prometheus Operator)
+  prometheus.io/scrape: "true"
+  # Builtin metrics endpoint của LiveKit
+  prometheus.io/port: "7882"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+securityContext:
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+                - livekit-server
+        topologyKey: kubernetes.io/hostname
+
+deploymentStrategy:
+  type: Recreate
+  # rollingUpdate:
+  #   maxSurge: 1
+  #   maxUnavailable: 0
+
+deploymentAnnotations: {}
+
+# Persistent Volume cho logs/config
+persistence:
+  enabled: false
+  # storageClass: ""
+  # accessMode: ReadWriteOnce
+  # size: 1Gi
+  # mountPath: /var/log/livekit
+
+# Extra volumes và mounts
+extraVolumes: []
+extraVolumeMounts: []
+
+# Environment variables
+env:
+  - name: LIVEKIT_DEBUG
+    value: "true"
+  - name: LIVEKIT_DEVELOPMENT
+    value: "false"
+  # - name: LIVEKIT_REDIS_PASSWORD
+  #   valueFrom:
+  #     secretKeyRef:
+  #       name: livekit-server-secret
+  #       key: REDIS_PASSWORD
+
+initContainers: []
+sidecars: []
+
+# Chỉ dùng khi deploy google cloud với GCP LB
+gcp:
+  backendConfig:
+    enabled: false
+    name: ""
+    timeoutSec: 36000
+    connectionDraining:
+      drainingTimeoutSec: 60
+
+# ServiceMonitor cho Prometheus Operator
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+  labels: {}
+  annotations: {}
+
+podMonitor:
+  enabled: false
+  interval: 30s
+  scrapeTimeout: 10s
+
+networkPolicy:
+  enabled: false
+  ingress: []
+  egress: []
+
+podLabels: {}
+extraManifests: []

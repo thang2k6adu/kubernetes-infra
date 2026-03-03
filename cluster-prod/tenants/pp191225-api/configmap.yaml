@@ -1,0 +1,33 @@
+apiVersion: v1
+data:
+  ALGOLIA_APP_ID: ""
+  ALGOLIA_INDEX_NAME: ""
+  APP_NAME: nest-boilerplate
+  AWS_REGION: us-east-1
+  AWS_S3_BUCKET: ""
+  CLOUDINARY_CLOUD_NAME: ""
+  CORS_ORIGIN: http://localhost:5173
+  ELASTICSEARCH_NODE: http://localhost:9200
+  FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@pp191225-53185.iam.gserviceaccount.com
+  FIREBASE_PROJECT_ID: pp191225-53185
+  JWT_EXPIRES_IN: 2h
+  JWT_REFRESH_EXPIRES_IN: 7d
+  LIVEKIT_API_KEY: devkey
+  LIVEKIT_URL: wss://livekit.thang2k6adu.xyz
+  MAIL_FROM: noreply@example.com
+  MAIL_HOST: smtp.gmail.com
+  MAIL_PORT: "587"
+  MAIL_SECURE: "false"
+  MAIL_USER: your-email@gmail.com
+  NODE_ENV: production
+  PORT: "3000"
+  REDIS_HOST: adapting-chow-38310.upstash.io
+  REDIS_PORT: "6379"
+  REDIS_TLS: "true"
+  SEARCH_PROVIDER: elasticsearch
+  STORAGE_LOCAL_DEST: ./uploads
+  STORAGE_PROVIDER: local
+kind: ConfigMap
+metadata:
+  name: pp191225-config
+  namespace: pp191225-api

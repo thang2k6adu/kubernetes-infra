@@ -1,0 +1,81 @@
+controller:
+  replicaCount: 2
+
+  ingressClassResource:
+    enabled: true
+    default: true
+    name: nginx
+
+  kind: Deployment
+
+  service:
+    enabled: true
+    type: NodePort
+    externalTrafficPolicy: Local
+    ports:
+      http: 80
+      https: 443
+    nodePorts:
+      http: 30080
+      https: 30443
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 5
+    targetCPUUtilizationPercentage: 60
+
+  config:
+    use-forwarded-headers: "true"
+    proxy-real-ip-cidr: "0.0.0.0/0"
+    real-ip-header: "X-Forwarded-For"
+    proxy-body-size: "50m"
+    proxy-read-timeout: "600"
+    proxy-send-timeout: "600"
+    worker-shutdown-timeout: "240s"
+    enable-underscores-in-headers: "true"
+
+  allowSnippetAnnotations: false
+
+  metrics:
+    enabled: true
+    service:
+      enabled: true
+    serviceMonitor:
+      enabled: true
+
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1
+
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            labelSelector:
+              matchExpressions:
+                - key: app.kubernetes.io/component
+                  operator: In
+                  values:
+                    - controller
+            topologyKey: kubernetes.io/hostname
+
+  terminationGracePeriodSeconds: 300
+
+  lifecycle:
+    preStop:
+      exec:
+        command:
+          - /wait-shutdown
+
+defaultBackend:
+  enabled: true
