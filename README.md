@@ -72,7 +72,7 @@ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/st
 Then, just apply this repo:
 
 ```shell
-kubectl apply -k https://github.com/thang2k6adu/kubernetes-infra/cluster-dev/bootstrap/overlays/default
+kubectl apply -k https://github.com/thang2k6adu/kubernetes-infra/cluster-prod/bootstrap/overlays/default
 ```
 
 ### Step 3: Verify Applications
