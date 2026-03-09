@@ -23,8 +23,11 @@ sudo iptables -t nat -L -n -v
 # ==========================================
 # Tối ưu Connection Tracking
 # ==========================================
+#giúp server chị tải nhiều connections hơn
 sudo sysctl -w net.netfilter.nf_conntrack_max=1048576
+#tăng timeout, udp ko packet trong 5' mới disconnect
 sudo sysctl -w net.netfilter.nf_conntrack_udp_timeout=300
+#Tăng stream timeout, để thấp dễ bị drop, kernel nghĩ connection die
 sudo sysctl -w net.netfilter.nf_conntrack_udp_timeout_stream=300
 
 # Ghi vĩnh viễn vào file cấu hình
