@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - ghcr.io/thang2k6adu/pp100326-be/be:d4dbdefb8623eee9870b9472cad2bffc5b7a3410
+  - ghcr.io/thang2k6adu/pp100326-be/be:96529f9a0492d20982b8df85a015cfa1f7544022
