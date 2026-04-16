@@ -11,7 +11,7 @@ resources:
 helmCharts:
   - name: postgresql
     repo: https://charts.bitnami.com/bitnami
-    version: 15.5.26
+    version: 18.5.18
     releaseName: prod
     namespace: pp191225-db
     valuesFile: values.yaml
