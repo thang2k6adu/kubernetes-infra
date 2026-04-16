@@ -21,7 +21,6 @@ data:
   REDIS_HOST: busy-beagle-85601.upstash.io
   REDIS_PORT: "6379"
   REDIS_TLS: "true"
-  RESEND_API_KEY: re_SCefFZiF_CY1U5ur1rGkJVRzxvvkViPXT
   SEARCH_PROVIDER: elasticsearch
   STORAGE_LOCAL_DEST: ./uploads
   STORAGE_PROVIDER: local

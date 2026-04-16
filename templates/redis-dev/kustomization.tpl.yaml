@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: {{SERVICE_NAME}}
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: redis
+    repo: https://charts.bitnami.com/bitnami
+    version: 20.9.0
+    releaseName: dev
+    namespace: {{SERVICE_NAME}}
+    valuesFile: values.yaml
