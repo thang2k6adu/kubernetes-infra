@@ -216,3 +216,5 @@ creat a seal secret
 
 kubeseal --cert cluster-prod/pub-cert.pem -o yaml \
 < secrets.yaml > sealed-secrets.yaml
+
+servicename ưu tiên name override -> fullname override -> fallback về project name (tham số truyền lúc chạy script)
