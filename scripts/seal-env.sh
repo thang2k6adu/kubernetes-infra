@@ -267,7 +267,7 @@ if [[ ! -f "$whitelistFile" ]]; then
   exit 0
 fi
 
-baseName="${serviceName%-api}"
+baseName="$serviceName"
 configMapName="${baseName}-config"
 secretName="${baseName}-secret"
 

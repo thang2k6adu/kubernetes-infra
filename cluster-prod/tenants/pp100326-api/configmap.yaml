@@ -27,5 +27,5 @@ data:
 kind: ConfigMap
 metadata:
   creationTimestamp: null
-  name: pp100326-config
+  name: pp100326-api-config
   namespace: pp100326-api
