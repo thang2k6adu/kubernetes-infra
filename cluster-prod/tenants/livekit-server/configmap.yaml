@@ -1,6 +1,4 @@
 apiVersion: v1
-data:
-  LIVEKIT_KEYS: prod_key_v1:ZviWnN4VkiWfJDj/xsHGd1gtqRCeyPvpXugXvLW4WrI=
 kind: ConfigMap
 metadata:
   creationTimestamp: null
