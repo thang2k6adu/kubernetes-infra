@@ -14,7 +14,7 @@ data:
   FRONTEND_URL: https://pp-191225-web.vercel.app
   JWT_EXPIRES_IN: 2h
   JWT_REFRESH_EXPIRES_IN: 7d
-  LIVEKIT_API_KEY: devkey
+  LIVEKIT_API_KEY: prodkey
   LIVEKIT_URL: wss://livekit.kruzetech.dev
   MAIL_FROM: ttran06@kruzetech.dev
   NODE_ENV: production
