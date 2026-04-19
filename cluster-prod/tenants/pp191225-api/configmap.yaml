@@ -6,7 +6,7 @@ data:
   AWS_REGION: us-east-1
   AWS_S3_BUCKET: ""
   CLOUDINARY_CLOUD_NAME: ""
-  CORS_ORIGIN: https://pp-191225-web.vercel.app,http://localhost:5173
+  CORS_ORIGIN: https://pp-191225-web.vercel.app,http://localhost:5173,https://focushub.kruzetech.dev
   ELASTICSEARCH_NODE: http://localhost:9200
   FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@pp191225-40959.iam.gserviceaccount.com
   FIREBASE_PROJECT_ID: pp191225-40959
