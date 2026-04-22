@@ -92,7 +92,7 @@ usePasswordFiles: true
 ##
 image:
   registry: docker.io
-  repository: bitnamilegacy/keycloak
+  repository: bitnami/keycloak
   tag: 26.3.3-debian-12-r0
   digest: ""
   ## Specify a imagePullPolicy
@@ -1004,7 +1004,7 @@ keycloakConfigCli:
   ##
   image:
     registry: docker.io
-    repository: bitnamilegacy/keycloak-config-cli
+    repository: bitnami/keycloak-config-cli
     tag: 6.4.0-debian-12-r11
     digest: ""
     ## Specify a imagePullPolicy
