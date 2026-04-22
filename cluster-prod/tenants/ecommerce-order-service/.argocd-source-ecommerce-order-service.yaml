@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - ghcr.io/nguyenmanhdat006/order--service-ecommerce:42d6d696fe40372c3e4f49e07047f5979f0f70f2
