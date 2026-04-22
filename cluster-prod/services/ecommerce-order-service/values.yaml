@@ -2,7 +2,7 @@
 # Generated from service.yaml configuration
 
 image:
-  repository: ghcr.io/nguyenmanhdat006/order-service-ecommerce
+  repository: ghcr.io/nguyenmanhdat006/order--service-ecommerce
   pullPolicy: Always
   tag: "e89b762db8e434f4679c366c6b7e9ed7436e75aa"
 
