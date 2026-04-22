@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - ghcr.io/nguyenmanhdat006/user-service-ecommerce:34d8b9288501372305fe602218ef4aa4a508d23e
+  - ghcr.io/nguyenmanhdat006/user-service-ecommerce:1abc783ccb1c178a2697a193d5ea3ff0aaccb8f6
