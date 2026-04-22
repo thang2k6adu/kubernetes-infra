@@ -7,9 +7,9 @@ resources:
   - namespace.yaml
 
 helmCharts:
-  - name: postgresql
+  - name: keycloak
     repo: https://charts.bitnami.com/bitnami
-    version: 18.5.18
+    version: 24.3.2
     releaseName: prod
     namespace: {{SERVICE_NAME}}
     valuesFile: values.yaml
