@@ -1,0 +1,19 @@
+apiVersion: v1
+data:
+  DB_URL: jdbc:postgresql://ep-fancy-butterfly-aohsjx0h-pooler.c-2.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require&channel_binding=require
+  DB_USERNAME: neondb_owner
+  JWT_ISSUER_URI: http://prod-ecommerce-keycloak.ecommerce-keycloak.svc.cluster.local/realms/ecommerce
+  JWT_JWK_SET_URI: http://prod-ecommerce-keycloak.ecommerce-keycloak.svc.cluster.local/realms/ecommerce/protocol/openid-connect/certs
+  KAFKA_BOOTSTRAP_SERVERS: kafka-3a12d0c9-thang2k6adu-d680.i.aivencloud.com:19381
+  KAFKA_SASL_MECHANISM: SCRAM-SHA-512
+  KAFKA_SASL_USERNAME: avnadmin
+  KAFKA_SECURITY_PROTOCOL: 'SASL_SSL # Change to SASL_SSL if using authentication'
+  PRODUCT_SERVICE_URL: http://prod-ecommerce-product-service.ecommerce-product-service.svc.cluster.local:8082
+  SERVER_PORT: "8083"
+  SPRING_PROFILES_ACTIVE: kafka-sasl
+  USER_REGISTERED_TOPIC: user.registered
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: ecommerce-order-service-config
+  namespace: ecommerce-order-service

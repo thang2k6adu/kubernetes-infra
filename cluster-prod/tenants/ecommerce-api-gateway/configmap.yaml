@@ -1,13 +1,13 @@
 apiVersion: v1
 data:
   AUTH_SERVICE_URL: http://prod-ecommerce-user-service.ecommerce-user-service.svc.cluster.local:8081
-  CART_SERVICE_URL: http://prod-ecommerce-cart-service.ecommerce-cart-service.svc.cluster.local:8081
-  NOTIFICATION_SERVICE_URL: http://localhost:8087
+  CART_SERVICE_URL: http://prod-ecommerce-cart-service.ecommerce-cart-service.svc.cluster.local:8083
+  NOTIFICATION_SERVICE_URL: http://prod-ecommerce-notification-service.ecommerce-notification-service.svc.cluster.local:8087
   ORDER_SERVICE_URL: http://prod-ecommerce-order-service.ecommerce-order-service.svc.cluster.local:8081
-  PAYMENT_SERVICE_URL: http://localhost:8085
-  PRODUCT_SERVICE_URL: http://localhost:8082
-  REVIEW_SERVICE_URL: http://localhost:8086
-  SHIPPING_SERVICE_URL: http://localhost:8088
+  PAYMENT_SERVICE_URL: http://prod-ecommerce-payment-service.ecommerce-payment-service.svc.cluster.local:8085
+  PRODUCT_SERVICE_URL: http://prod-ecommerce-product-service.ecommerce-product-service.svc.cluster.local:8082
+  REVIEW_SERVICE_URL: http://prod-ecommerce-review-service.ecommerce-review-service.svc.cluster.local:8086
+  SHIPPING_SERVICE_URL: http://prod-ecommerce-shipping-service.ecommerce-shipping-service.svc.cluster.local:8088
 kind: ConfigMap
 metadata:
   creationTimestamp: null
