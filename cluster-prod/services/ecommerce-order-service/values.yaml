@@ -1,16 +1,16 @@
-# Helm values for ecommerce-cart-service
+# Helm values for ecommerce-order-service
 # Generated from service.yaml configuration
 
 image:
-  repository: ghcr.io/nguyenmanhdat006/cart-service-ecommerce
+  repository: ghcr.io/nguyenmanhdat006/order-service-ecommerce
   pullPolicy: Always
-  tag: "bcea1d9516ec0452b859be2efeed91b2519e8e08"
+  tag: "e89b762db8e434f4679c366c6b7e9ed7436e75aa"
 
 # err is for vs code lint, ignore it
 imagePullSecrets:
   []
 
-nameOverride: "ecommerce-cart-service"
+nameOverride: "ecommerce-order-service"
 fullnameOverride: ""
 
 replicaCount: 1
@@ -48,8 +48,8 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 8081
-  targetPort: 8081
+  port: 8084
+  targetPort: 8084
   annotations: {}
 
 ingress:
@@ -57,7 +57,7 @@ ingress:
   className: "nginx"
   annotations: {}
   hosts:
-    - host: ecommerce-cart-service.kruzetech.dev
+    - host: ecommerce-order-service.kruzetech.dev
       paths:
         - path: /
           pathType: Prefix
@@ -109,9 +109,9 @@ autoscaling:
 
 envFrom:
   - configMapRef:
-      name: ecommerce-cart-service-config
+      name: ecommerce-order-service-config
   - secretRef:
-      name: ecommerce-cart-service-secret
+      name: ecommerce-order-service-secret
 
 configMap:
   enabled: false
@@ -159,7 +159,7 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - ecommerce-cart-service
+                  - ecommerce-order-service
           topologyKey: kubernetes.io/hostname
 
 serviceMonitor:
