@@ -188,7 +188,7 @@ trustedCertsExistingSecret: ""
 adminRealm: "master"
 ## @param proxyHeaders Set Keycloak proxy headers
 ##
-# proxyHeaders: ""
+# proxyHeaders: "none"
 ## @param hostnameStrict Disables dynamically resolving the hostname from request headers (ignored if ingress.enabled is false).
 ## Should always be set to true in production, unless your reverse proxy overwrites the Host header.
 ## If enabled, the ingress.hostname option needs to be specified.
@@ -612,20 +612,20 @@ service:
 ingress:
   ## @param ingress.enabled Enable ingress record generation for Keycloak
   ##
-  enabled: false
+  enabled: true
   ## @param ingress.pathType Ingress path type
   ##
-  pathType: ImplementationSpecific
+  pathType: Prefix
   ## @param ingress.apiVersion Force Ingress API version (automatically detected if not set)
   ##
   apiVersion: ""
   ## @param ingress.hostname Default host for the ingress record (evaluated as template)
   ##
-  hostname: keycloak.local
+  hostname: keycloak.kruzetech.dev
   ## @param ingress.ingressClassName IngressClass that will be be used to implement the Ingress (evaluated as template)
   ## Required if you have more than one IngressClass marked as the default for your cluster
   ##
-  ingressClassName: ""
+  ingressClassName: "nginx"
   ## @param ingress.controller The ingress controller type. Currently supports `default` and `gce`
   ## leave as `default` for most ingress controllers.
   ## set to `gce` if using the GCE ingress controller

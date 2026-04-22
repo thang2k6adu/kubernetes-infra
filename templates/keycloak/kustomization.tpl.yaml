@@ -9,7 +9,7 @@ resources:
 helmCharts:
   - name: keycloak
     repo: https://charts.bitnami.com/bitnami
-    version: 24.3.2
+    version: 25.2.0
     releaseName: prod
     namespace: {{SERVICE_NAME}}
     valuesFile: values.yaml
