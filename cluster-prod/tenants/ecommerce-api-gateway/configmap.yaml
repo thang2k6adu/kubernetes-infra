@@ -1,9 +1,9 @@
 apiVersion: v1
 data:
   AUTH_SERVICE_URL: http://prod-ecommerce-user-service.ecommerce-user-service.svc.cluster.local:8081
-  CART_SERVICE_URL: http://localhost:8083
+  CART_SERVICE_URL: http://prod-ecommerce-cart-service.ecommerce-cart-service.svc.cluster.local:8081
   NOTIFICATION_SERVICE_URL: http://localhost:8087
-  ORDER_SERVICE_URL: http://localhost:8084
+  ORDER_SERVICE_URL: http://prod-ecommerce-order-service.ecommerce-order-service.svc.cluster.local:8081
   PAYMENT_SERVICE_URL: http://localhost:8085
   PRODUCT_SERVICE_URL: http://localhost:8082
   REVIEW_SERVICE_URL: http://localhost:8086
