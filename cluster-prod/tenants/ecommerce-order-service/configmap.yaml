@@ -12,7 +12,7 @@ data:
   KAFKA_SSL_CA_CERT_PATH: ./ca.pem
   PRODUCT_SERVICE_URL: http://prod-ecommerce-product-service.ecommerce-product-service.svc.cluster.local:8082
   SERVER_PORT: "8084"
-  SPRING_PROFILES_ACTIVE: kafka-sasl
+  SPRING_PROFILES_ACTIVE: prod
   USER_REGISTERED_TOPIC: user.registered
   USER_SERVICE_URL: http://prod-ecommerce-user-service.ecommerce-user-service.svc.cluster.local:8081
 kind: ConfigMap
