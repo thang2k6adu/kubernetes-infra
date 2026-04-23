@@ -3,8 +3,8 @@ data:
   DB_URL: jdbc:postgresql://ep-fancy-butterfly-aohsjx0h-pooler.c-2.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require&channel_binding=require
   DB_USERNAME: neondb_owner
   ELASTICSEARCH_URIS: http://localhost:9200
-  JWT_ISSUER_URI: http://prod-ecommerce-keycloak.ecommerce-keycloak.svc.cluster.local/realms/ecommerce
-  JWT_JWK_SET_URI: http://prod-ecommerce-keycloak.ecommerce-keycloak.svc.cluster.local/realms/ecommerce/protocol/openid-connect/certs
+  JWT_ISSUER_URI: https://keycloak.kruzetech.dev/realms/ecommerce
+  JWT_JWK_SET_URI: https://keycloak.kruzetech.dev/realms/ecommerce/protocol/openid-connect/certs
   KAFKA_BOOTSTRAP_SERVERS: kafka-3a12d0c9-thang2k6adu-d680.i.aivencloud.com:19381
   KAFKA_SASL_MECHANISM: SCRAM-SHA-512
   KAFKA_SASL_USERNAME: avnadmin
