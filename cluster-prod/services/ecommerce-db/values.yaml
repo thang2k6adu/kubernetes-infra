@@ -37,8 +37,8 @@ global:
       postgresPassword: ""
       username: "thang2k6adu"
       password: ""
-      database: "pp191225"
-      existingSecret: "pp191225-db-secret"
+      database: "ecommerce"
+      existingSecret: "ecommerce-db-secret"
       secretKeys:
         adminPasswordKey: "POSTGRES_PASSWORD"
         userPasswordKey: "PASSWORD"
@@ -66,7 +66,7 @@ global:
 kubeVersion: ""
 ## @param nameOverride String to partially override common.names.fullname template (will maintain the release name)
 ##
-nameOverride: "pp191225-db"
+nameOverride: "ecommerce-db"
 ## @param fullnameOverride String to fully override common.names.fullname template
 ##
 fullnameOverride: ""
@@ -117,8 +117,8 @@ diagnosticMode:
 ##
 image:
   registry: docker.io
-  repository: bitnamilegacy/postgresql
-  tag: 17.4.0-debian-12-r19
+  repository: bitnami/postgresql
+  tag: 17.6.0-debian-12-r4
   digest: ""
   ## Specify a imagePullPolicy
   ## ref: https://kubernetes.io/docs/concepts/containers/images/#pre-pulled-images
@@ -490,10 +490,10 @@ primary:
   resources:
     requests:
       cpu: 1
-      memory: 2048Mi
+      memory: 1024Mi
     limits:
       cpu: 2
-      memory: 2048Mi
+      memory: 1024Mi
   ##
   ## Pod Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/

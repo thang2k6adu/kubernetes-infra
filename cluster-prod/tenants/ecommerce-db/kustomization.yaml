@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: pp191225-redis
+namespace: ecommerce-db
 
 resources:
   - configmap.yaml
@@ -9,9 +9,9 @@ resources:
   - namespace.yaml
 
 helmCharts:
-  - name: redis
+  - name: postgresql
     repo: https://charts.bitnami.com/bitnami
-    version: 20.9.0
+    version: 18.5.18
     releaseName: prod
-    namespace: pp191225-redis
+    namespace: ecommerce-db
     valuesFile: values.yaml
