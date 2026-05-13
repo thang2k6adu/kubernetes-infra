@@ -5,8 +5,8 @@ data:
   DB_USERNAME: thang2k6adu
   JPA_DDL_AUTO: update
   JPA_SHOW_SQL: "true"
-  JWT_ISSUER_URI: http://prod-ecommerce-keycloak.ecommerce-keycloak.svc.cluster.local/realms/ecommerce
-  JWT_JWK_SET_URI: http://prod-ecommerce-keycloak.ecommerce-keycloak.svc.cluster.local/realms/ecommerce/protocol/openid-connect/certs
+  JWT_ISSUER_URI: https://keycloak.kruzetech.dev/realms/ecommerce
+  JWT_JWK_SET_URI: https://keycloak.kruzetech.dev/realms/ecommerce/protocol/openid-connect/certs
   KAFKA_BOOTSTRAP_SERVERS: kafka-3a12d0c9-thang2k6adu-d680.i.aivencloud.com:19381
   KAFKA_SASL_MECHANISM: SCRAM-SHA-512
   KAFKA_SASL_USERNAME: avnadmin
