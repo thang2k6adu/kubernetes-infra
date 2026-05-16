@@ -48,8 +48,8 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 8082
-  targetPort: 8082
+  port: 8089
+  targetPort: 8089
   annotations: {}
 
 ingress:
