@@ -1,4 +1,4 @@
-# Helm values for ecommerce-product-service
+# Helm values for ecommerce-storage-service
 # Generated from service.yaml configuration
 
 image:
@@ -10,7 +10,7 @@ image:
 imagePullSecrets:
   []
 
-nameOverride: "ecommerce-product-service"
+nameOverride: "ecommerce-storage-service"
 fullnameOverride: ""
 
 replicaCount: 1
@@ -57,7 +57,7 @@ ingress:
   className: "nginx"
   annotations: {}
   hosts:
-    - host: ecommerce-product-service.kruzetech.dev
+    - host: ecommerce-storage-service.kruzetech.dev
       paths:
         - path: /
           pathType: Prefix
@@ -109,9 +109,9 @@ autoscaling:
 
 envFrom:
   - configMapRef:
-      name: ecommerce-product-service-config
+      name: ecommerce-storage-service-config
   - secretRef:
-      name: ecommerce-product-service-secret
+      name: ecommerce-storage-service-secret
 
 configMap:
   enabled: false
@@ -159,7 +159,7 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - ecommerce-product-service
+                  - ecommerce-storage-service
           topologyKey: kubernetes.io/hostname
 
 serviceMonitor:
