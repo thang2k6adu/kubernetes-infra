@@ -1,0 +1,21 @@
+apiVersion: v1
+data:
+  DB_URL: jdbc:postgresql://prod-ecommerce-db.ecommerce-db.svc.cluster.local:5432/ecommerce
+  DB_USERNAME: thang2k6adu
+  FRONTEND_URL: http://localhost:3000
+  LOGGING_LEVEL_COM_ECOMMERCE: DEBUG
+  LOGGING_LEVEL_ORG_HIBERNATE: WARN
+  LOGGING_LEVEL_ORG_SPRINGFRAMEWORK: INFO
+  ORDER_SERVICE_URL: http://prod-ecommerce-order-service.ecommerce-order-service.svc.cluster.local:8084
+  SERVER_PORT: "8085"
+  SERVER_SERVLET_CONTEXT_PATH: /api
+  VNPAY_COMMAND: pay
+  VNPAY_RETURN_URL: http://ecommerce-payment-service.kruzetech.dev/api/payments/vnpay/callback
+  VNPAY_TMN_CODE: DEMO
+  VNPAY_URL: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  VNPAY_VERSION: 2.1.0
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: ecommerce-payment-service-config
+  namespace: ecommerce-payment-service
