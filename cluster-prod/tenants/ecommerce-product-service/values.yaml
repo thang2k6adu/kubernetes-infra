@@ -2,9 +2,9 @@
 # Generated from service.yaml configuration
 
 image:
-  repository: ghcr.io/nguyenmanhdat006/product-service-ecommerce
+  repository: ghcr.io/thang2k6adu/ecommerce-product-service
   pullPolicy: Always
-  tag: "b0864d3dd9d6db952d521a6761c234d9ac506776"
+  tag: "f7f655eff9332f88f24fb7d621cdf85487126c00"
 
 # err is for vs code lint, ignore it
 imagePullSecrets:
