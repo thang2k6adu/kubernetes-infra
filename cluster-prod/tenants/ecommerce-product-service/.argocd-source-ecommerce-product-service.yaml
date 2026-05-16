@@ -2,4 +2,4 @@ kustomize:
   images:
   - ghcr.io/nguyenmanhdat006/product-service-ecommerce:3d7f520450675294dc4146d123c091c6592bc28f
   - ghcr.io/thang2k6adu/ecommerce-storage-service:77300c3e588b84ca347d3e0feb1dee7546efe553
-  - ghcr.io/thang2k6adu/ecommerce-product-service:f7f655eff9332f88f24fb7d621cdf85487126c00
+  - ghcr.io/thang2k6adu/ecommerce-product-service:e0e4a0d728a24c866c425ac51d9896aaaa869d2c
