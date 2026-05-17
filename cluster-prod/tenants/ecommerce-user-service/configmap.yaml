@@ -17,6 +17,7 @@ data:
   KEYCLOAK_DB_NAME: bitnami_keycloak
   KEYCLOAK_DB_PORT: "5432"
   KEYCLOAK_DB_USERNAME: bn_keycloak
+  KEYCLOAK_FORGOT_PASSWORD_REDIRECT_URI: https://react-fashion-gilt.vercel.app
   KEYCLOAK_HOSTNAME: prod-ecommerce-keycloak.ecommerce-keycloak.svc.cluster.local
   KEYCLOAK_HTTP_PORT: "8080"
   KEYCLOAK_REALM: ecommerce
