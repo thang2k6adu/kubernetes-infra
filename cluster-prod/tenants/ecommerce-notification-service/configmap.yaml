@@ -11,6 +11,7 @@ data:
   KAFKA_SECURITY_PROTOCOL: SASL_SSL
   KAFKA_SSL_CA_CERT_PATH: ./ca.pem
   KEYCLOAK_RESOURCE: ecommerce-backend
+  MAIL_USERNAME: manhdatvbhp@gmail.com
   MINIO_ACCESS_KEY: minioadmin
   MINIO_BUCKET_NAME: ecommerce-products
   MINIO_SECRET_KEY: minioadmin
