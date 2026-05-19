@@ -11,7 +11,7 @@ data:
   PAYMENT_SERVICE_URL: http://prod-ecommerce-payment-service.ecommerce-payment-service.svc.cluster.local:8085
   PRODUCT_SERVICE_URL: http://prod-ecommerce-product-service.ecommerce-product-service.svc.cluster.local:8082
   SERVER_PORT: "8084"
-  SHIPPING_SERVICE_URL: http://prod-ecommerce-shipping-service.ecommerce-shipping-service.svc.cluster.local:8086
+  SHIPPING_SERVICE_URL: http://prod-ecommerce-shipping-service.ecommerce-shipping-service.svc.cluster.local:8088
   USER_SERVICE_URL: http://prod-ecommerce-user-service.ecommerce-user-service.svc.cluster.local:8081
 kind: ConfigMap
 metadata:
