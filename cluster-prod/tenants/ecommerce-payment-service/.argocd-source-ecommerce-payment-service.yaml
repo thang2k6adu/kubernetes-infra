@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - ghcr.io/nguyenmanhdat006/payment-service-ecommerce:051fa804ca721c7c96387c0c21d4f4c344d3e82f
+  - ghcr.io/nguyenmanhdat006/payment-service-ecommerce:e4b1947cf5ed50d6e52f1d3ba856017990618d9d
