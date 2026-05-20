@@ -4,7 +4,7 @@
 image:
   repository: ghcr.io/thang2k6adu/ecommerce-chat-service
   pullPolicy: Always
-  tag: "c49bb5c0a2ac982f05bd80851cf82c4bbee386c5"
+  tag: "baed3455380baf667bdd0623f769b936a432f8d3"
 
 # err is for vs code lint, ignore it
 imagePullSecrets:
