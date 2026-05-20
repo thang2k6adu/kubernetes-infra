@@ -342,7 +342,7 @@ nginx -t && systemctl reload nginx
 ### Remove domain
 
 ```bash
-DOMAIN=livekit.kruzetech.dev
+DOMAIN=ecommerce-socket-gateway.kruzetech.dev
 
 sudo rm -f /etc/nginx/sites-enabled/$DOMAIN
 sudo rm -f /etc/nginx/sites-available/$DOMAIN
@@ -384,7 +384,7 @@ spec:
 **Add domain:**
 
 ```bash
-sudo add-domain dashboard.thang2k6adu.xyz cluster-dev
+sudo add-domain ecommerce-socket-gateway.kruzetech.dev cluster-prod
 ```
 
 Commit rồi đẩy lên. Chờ gitops là xong.
