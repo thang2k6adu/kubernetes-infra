@@ -8,6 +8,7 @@ data:
   PRODUCT_SERVICE_URL: http://prod-ecommerce-product-service.ecommerce-product-service.svc.cluster.local:8082
   REVIEW_SERVICE_URL: http://prod-ecommerce-review-service.ecommerce-review-service.svc.cluster.local:8086
   SHIPPING_SERVICE_URL: http://prod-ecommerce-shipping-service.ecommerce-shipping-service.svc.cluster.local:8088
+  SOCKET_GATEWAY_URL: http://prod-ecommerce-socket-gateway.ecommerce-socket-gateway.svc.cluster.local:8090
   STORAGE_SERVICE_URL: http://prod-ecommerce-storage-service.ecommerce-storage-service.svc.cluster.local:8089
 kind: ConfigMap
 metadata:
