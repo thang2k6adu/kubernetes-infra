@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - ghcr.io/nguyenmanhdat006/api-gateway-ecommerce/api-gateway:639aa9e7bf4283011ac41213ae6b69ba1a89feff
+  - ghcr.io/nguyenmanhdat006/api-gateway-ecommerce/api-gateway:0366b6fe9d62757b4dddb7513f1383c01260400a
