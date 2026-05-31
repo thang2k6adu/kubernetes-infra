@@ -17,6 +17,16 @@ global:
 grafana:
   enabled: true
 
+  ingress:
+    enabled: true
+    className: "nginx"
+    annotations: {}
+    hosts:
+      - host: grafana.kruzetech.dev
+        paths:
+          - path: /
+            pathType: Prefix
+
 alertmanager:
   enabled: false
 
