@@ -2,7 +2,7 @@ apiVersion: v1
 data:
   APP_NAME: nest-boilerplate
   AWS_REGION: us-east-1
-  CLOUDINARY_CLOUD_NAME: mediaflows_7aee14c6-3548-4a65-af15-96f1334f2cd7
+  CLOUDINARY_CLOUD_NAME: diqmhowij
   CORS_ORIGIN: https://pp-191225-web.vercel.app,http://localhost:5173,https://focushub.kruzetech.dev
   ELASTICSEARCH_NODE: http://localhost:9200
   FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@pp191225-40959.iam.gserviceaccount.com
