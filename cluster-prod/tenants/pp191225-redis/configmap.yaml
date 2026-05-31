@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: pp191225-redis-config
+  namespace: pp191225-redis

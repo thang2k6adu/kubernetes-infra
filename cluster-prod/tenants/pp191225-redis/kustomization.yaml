@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: pp191225-redis
+
+resources:
+  - configmap.yaml
+  - sealed-secret.yaml
+  - namespace.yaml
+
+helmCharts:
+  - name: redis
+    repo: https://charts.bitnami.com/bitnami
+    version: 20.9.0
+    releaseName: prod
+    namespace: pp191225-redis
+    valuesFile: values.yaml
