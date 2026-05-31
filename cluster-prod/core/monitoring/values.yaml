@@ -15,7 +15,7 @@ global:
       effect: "NoSchedule"
 
 grafana:
-  enabled: false
+  enabled: true
 
 alertmanager:
   enabled: false
