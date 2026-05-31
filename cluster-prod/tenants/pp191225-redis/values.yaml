@@ -113,7 +113,7 @@ diagnosticMode:
 ##
 image:
   registry: docker.io
-  repository: bitnamile/redis
+  repository: bitnami/redis
   tag: latest
   digest: ""
   ## Specify a imagePullPolicy
