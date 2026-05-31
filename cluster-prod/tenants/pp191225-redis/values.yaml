@@ -13,6 +13,7 @@
 ## @param global.storageClass DEPRECATED: use global.defaultStorageClass instead
 ## @param global.redis.password Global Redis(R) password (overrides `auth.password`)
 ##
+
 global:
   imageRegistry: ""
   ## E.g.
