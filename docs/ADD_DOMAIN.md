@@ -384,7 +384,7 @@ spec:
 **Add domain:**
 
 ```bash
-sudo add-domain ecommerce-socket-gateway.kruzetech.dev cluster-prod
+sudo add-domain grafana.kruzetech.dev cluster-prod
 ```
 
 Commit rồi đẩy lên. Chờ gitops là xong.

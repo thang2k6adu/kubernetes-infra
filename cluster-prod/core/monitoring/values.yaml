@@ -19,13 +19,12 @@ grafana:
 
   ingress:
     enabled: true
-    className: "nginx"
+    ingressClassName: nginx
     annotations: {}
     hosts:
-      - host: grafana.kruzetech.dev
-        paths:
-          - path: /
-            pathType: Prefix
+      - grafana.kruzetech.dev
+    path: /
+    pathType: Prefix
 
 alertmanager:
   enabled: false
