@@ -50,7 +50,7 @@ config:
     [OUTPUT]
         Name es
         Match kube.*
-        Host elasticsearch-cluster-es-http.eck-system.svc.cluster.local:9200
+        Host elasticsearch-cluster-es-http.eck-system.svc.cluster.local
         Port 9200
         Logstash_Format On
         Retry_Limit False
