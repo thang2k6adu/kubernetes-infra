@@ -3,6 +3,9 @@ kind: Kustomization
 
 namespace: logging
 
+resources:
+  - namespace.yaml
+
 helmCharts:
   - name: fluent-bit
     repo: https://fluent.github.io/helm-charts
