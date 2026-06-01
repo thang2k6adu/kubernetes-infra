@@ -1,0 +1,46 @@
+kind: DaemonSet
+
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+
+config:
+  service: |
+    [SERVICE]
+        Flush        1
+        Daemon       Off
+        Log_Level    info
+        Parsers_File parsers.conf
+
+  inputs: |
+    [INPUT]
+        Name tail
+        Path /var/log/containers/*.log
+        Parser cri
+        Tag kube.*
+        Mem_Buf_Limit 50MB
+        Skip_Long_Lines On
+
+  filters: |
+    [FILTER]
+        Name kubernetes
+        Match kube.*
+        Merge_Log On
+        Keep_Log Off
+        K8S-Logging.Parser On
+        K8S-Logging.Exclude On
+
+  # outputs: |
+  #   [OUTPUT]
+  #       Name es
+  #       Match kube.*
+  #       Host elasticsearch-master.logging.svc.cluster.local
+  #       Port 9200
+  #       Logstash_Format On
+  #       Retry_Limit False
+  outputs: |
+    [OUTPUT]
+        Name stdout
+        Match kube.*
