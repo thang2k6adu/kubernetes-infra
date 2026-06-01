@@ -6,6 +6,7 @@ namespace: eck-system
 resources:
   - namespace.yaml
   - elasticsearch.yaml
+  - kibana.yaml
 
 helmCharts:
   - name: eck-operator
