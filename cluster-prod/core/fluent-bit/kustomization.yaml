@@ -5,6 +5,7 @@ namespace: logging
 
 resources:
   - namespace.yaml
+  - sealed-secrets.yaml
 
 helmCharts:
   - name: fluent-bit
