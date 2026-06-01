@@ -2,7 +2,7 @@ apiVersion: elasticsearch.k8s.elastic.co/v1
 kind: Elasticsearch
 metadata:
   name: elasticsearch-cluster
-  namespace: elastic-system
+  namespace: eck-system
 spec:
   version: 9.4.1
   nodeSets:
@@ -30,6 +30,7 @@ spec:
             name: elasticsearch-data
           spec:
             accessModes: ["ReadWriteOnce"]
+            storageClassName: local-path-retain
             resources:
               requests:
                 storage: 20Gi
