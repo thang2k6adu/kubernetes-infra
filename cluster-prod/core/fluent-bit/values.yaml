@@ -52,6 +52,10 @@ config:
         Match kube.*
         Host elasticsearch-cluster-es-http.eck-system.svc.cluster.local
         Port 9200
+
+        HTTP_User ${ELASTIC_USERNAME}
+        HTTP_Passwd ${ELASTIC_PASSWORD}
+        
         Logstash_Format On
         Retry_Limit False
         TLS On
