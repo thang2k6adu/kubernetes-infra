@@ -60,6 +60,8 @@ config:
         Retry_Limit False
         TLS On
         TLS.Verify Off
+
+        Suppress_Type_Name On
   # outputs: |
   #   [OUTPUT]
   #       Name stdout
