@@ -46,15 +46,15 @@ config:
         K8S-Logging.Parser On
         K8S-Logging.Exclude On
 
-  # outputs: |
-  #   [OUTPUT]
-  #       Name es
-  #       Match kube.*
-  #       Host elasticsearch-master.logging.svc.cluster.local
-  #       Port 9200
-  #       Logstash_Format On
-  #       Retry_Limit False
   outputs: |
     [OUTPUT]
-        Name stdout
+        Name es
         Match kube.*
+        Host elasticsearch-cluster-es-http.eck-system.svc.cluster.local:9200
+        Port 9200
+        Logstash_Format On
+        Retry_Limit False
+  # outputs: |
+  #   [OUTPUT]
+  #       Name stdout
+  #       Match kube.*
