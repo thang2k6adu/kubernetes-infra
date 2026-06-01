@@ -54,6 +54,8 @@ config:
         Port 9200
         Logstash_Format On
         Retry_Limit False
+        TLS On
+        TLS.Verify Off
   # outputs: |
   #   [OUTPUT]
   #       Name stdout
