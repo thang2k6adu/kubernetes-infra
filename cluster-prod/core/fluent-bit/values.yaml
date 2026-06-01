@@ -60,3 +60,16 @@ config:
   #   [OUTPUT]
   #       Name stdout
   #       Match kube.*
+
+env:
+  - name: ELASTIC_USERNAME
+    valueFrom:
+      secretKeyRef:
+        name: fluent-bit-secret
+        key: ELASTIC_USERNAME
+
+  - name: ELASTIC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: fluent-bit-secret
+        key: ELASTIC_PASSWORD
