@@ -30,7 +30,6 @@ spec:
             name: elasticsearch-data
           spec:
             accessModes: ["ReadWriteOnce"]
-            storageClassName: local-path-retain
             resources:
               requests:
                 storage: 20Gi
