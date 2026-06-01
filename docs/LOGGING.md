@@ -1,0 +1,1 @@
+kubectl logs -n logging -l app.kubernetes.io/name=fluent-bit -f
