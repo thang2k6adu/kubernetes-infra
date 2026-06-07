@@ -91,6 +91,7 @@ config:
         TLS.Verify Off
         Suppress_Type_Name On
         Replace_Dots On
+        Buffer_Size 5M
   # outputs: |
   #   [OUTPUT]
   #       Name stdout
