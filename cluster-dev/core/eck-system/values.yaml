@@ -15,7 +15,7 @@ managedNamespaces: []
 installCRDs: true
 
 # replicaCount is the number of operator pods to run.
-replicaCount: 1
+replicaCount: 0
 
 image:
   # repository is the container image prefixed by the registry name.
