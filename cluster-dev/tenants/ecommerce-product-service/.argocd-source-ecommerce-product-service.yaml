@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - ghcr.io/thang2k6adu/ecommerce-product-service:5b991223acfa7ae2db3f6c7afb7a44572dadfe6c
