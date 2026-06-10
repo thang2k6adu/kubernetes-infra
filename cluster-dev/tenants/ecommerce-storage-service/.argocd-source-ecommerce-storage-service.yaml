@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - ghcr.io/thang2k6adu/ecommerce-storage-service:3092f15580b0e1f82d26e73e14022c77cd9f39f7
