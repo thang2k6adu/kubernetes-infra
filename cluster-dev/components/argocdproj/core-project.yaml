@@ -26,8 +26,6 @@ spec:
       kind: Node
     - group: ""
       kind: PersistentVolume
-    - group: storage.k8s.io
-      kind: StorageClass
     - group: policy
       kind: PodSecurityPolicy
     - group: security.openshift.io

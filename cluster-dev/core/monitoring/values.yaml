@@ -15,7 +15,16 @@ global:
       effect: "NoSchedule"
 
 grafana:
-  enabled: false
+  enabled: true
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    annotations: {}
+    hosts:
+      - grafana.kruzetech.dev
+    path: /
+    pathType: Prefix
 
 alertmanager:
   enabled: false

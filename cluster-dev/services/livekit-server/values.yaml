@@ -47,7 +47,7 @@ livekit:
   
   turn:
     enabled: false
-    domain: "turn.thang2k6adu.xyz"
+    domain: "turn.kruzetech.dev"
     tls_port: 5349
     udp_port: 3478
     secret: "your-turn-secret"
@@ -80,7 +80,7 @@ ingress:
   className: ""
   annotations: {}
   hosts:
-    - host: livekit.thang2k6adu.xyz
+    - host: livekit.kruzetech.dev
       paths:
         - path: /
           pathType: Prefix

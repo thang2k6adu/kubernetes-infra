@@ -6,7 +6,7 @@ Nội dung:
 
 ```yaml
 - name: Open LiveKit ports on nodes
-  hosts: master:workers
+  hosts: workers
   become: yes
 
   tasks:

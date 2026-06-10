@@ -8,7 +8,7 @@ metadata:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
 spec:
   rules:
-  - host: dashboard.thang2k6adu.xyz
+  - host: dashboard.kruzetech.dev
     http:
       paths:
       - path: /

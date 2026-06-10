@@ -9,7 +9,7 @@ spec:
         repoURL: https://github.com/thang2k6adu/kubernetes-infra
         revision: main
         directories:
-          - path: cluster-dev/core/*
+          - path: cluster-prod/core/*
   template:
     metadata:
       name: "{{path.basename}}"

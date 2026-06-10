@@ -57,7 +57,7 @@ ingress:
   className: "nginx"
   annotations: {}
   hosts:
-    - host: pp191225api.thang2k6adu.xyz
+    - host: pp191225api.kruzetech.dev
       paths:
         - path: /
           pathType: Prefix
