@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - ghcr.io/thang2k6adu/ecommerce-chat-service:baed3455380baf667bdd0623f769b936a432f8d3
