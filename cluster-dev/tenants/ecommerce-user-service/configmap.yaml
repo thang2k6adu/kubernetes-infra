@@ -21,7 +21,7 @@ data:
   KEYCLOAK_HOSTNAME: usw2.auth.ac
   KEYCLOAK_HTTP_PORT: "8080"
   KEYCLOAK_REALM: ecommerce
-  KEYCLOAK_SERVER_URL: http://usw2.auth.ac
+  KEYCLOAK_SERVER_URL: https://usw2.auth.ac
   SECURITY_KEYCLOAK_CLIENT_ID: ecommerce-backend
   SERVER_CONTEXT_PATH: /
   SERVER_PORT: "8081"
