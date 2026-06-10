@@ -1,5 +1,7 @@
 kind: DaemonSet
 
+enabled: false
+
 serviceAccount:
   create: true
 

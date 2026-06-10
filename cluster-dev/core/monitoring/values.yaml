@@ -15,10 +15,10 @@ global:
       effect: "NoSchedule"
 
 grafana:
-  enabled: true
+  enabled: false
 
   ingress:
-    enabled: true
+    enabled: false
     ingressClassName: nginx
     annotations: {}
     hosts:

@@ -5,6 +5,7 @@ metadata:
   namespace: kubernetes-dashboard
 spec:
   template:
+    replicas: 0
     # metadata:
     #   labels:
     #     k8s-app: kubernetes-dashboard
