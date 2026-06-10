@@ -85,7 +85,7 @@ sudo apt install nmap -y
 ⚠️ **Lưu ý:** Nhớ sửa subnet + port SSH cho đúng môi trường. Sau này thêm server thì nhớ chạy lại cái này là oke.
 
 ```bash
-SUBNET=192.168.0.0/24
+SUBNET=192.168.1.0/24
 PORT=8022
 USER="thang2k6adu"
 START_IP=51
@@ -462,7 +462,7 @@ nano ~/k3s-inventory/install-k3s-worker.yml
 - hosts: workers
   become: yes
   vars:
-    k3s_url: "https://192.168.0.50:6443"
+    k3s_url: "https://192.168.1.50:6443"
     k3s_token: "K102a591724c94bb92d4f807fc363fc06cd9740f2c4a25eda7624995d3da5c86469::server:4635cb00c750479ca00c250ea73ebc00"
 
   tasks:
