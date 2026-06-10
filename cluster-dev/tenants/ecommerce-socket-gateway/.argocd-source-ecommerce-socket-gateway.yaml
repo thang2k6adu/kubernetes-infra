@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - ghcr.io/thang2k6adu/ecommerce-socket-gateway:37846592b3fae4160d7929c66af274210a65abc8
