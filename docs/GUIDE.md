@@ -23,4 +23,5 @@ Delete unused, err, success pods, non pod replicasSet
 kubectl delete pod -A --field-selector=status.phase=Succeeded
 kubectl delete pod -A --field-selector=status.phase=Failed
 kubectl get rs -A --no-headers | awk '$4==0 {print $1, $2}' | xargs -r -n2 kubectl delete rs -n
+sudo k3s crictl rmi --prune
 ```

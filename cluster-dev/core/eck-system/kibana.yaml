@@ -5,7 +5,7 @@ metadata:
   namespace: elastic-system
 spec:
   version: 9.4.1
-  count: 1
+  count: 0
 
   elasticsearchRef:
     name: elasticsearch-cluster
