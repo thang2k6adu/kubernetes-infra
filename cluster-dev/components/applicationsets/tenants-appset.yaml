@@ -11,7 +11,7 @@ spec:
                   repoURL: https://github.com/thang2k6adu/kubernetes-infra.git
                   revision: main
                   directories:
-                    - path: cluster-prod/tenants/*
+                    - path: cluster-dev/tenants/*
               - git:
                   repoURL: https://github.com/thang2k6adu/kubernetes-infra.git
                   revision: main
