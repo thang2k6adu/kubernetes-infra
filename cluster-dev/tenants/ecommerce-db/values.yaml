@@ -37,8 +37,8 @@ global:
       postgresPassword: ""
       username: "thang2k6adu"
       password: ""
-      database: "pp191225"
-      existingSecret: "pp191225-db-secret"
+      database: "ecommerce"
+      existingSecret: "ecommerce-db-secret"
       secretKeys:
         adminPasswordKey: "POSTGRES_PASSWORD"
         userPasswordKey: "PASSWORD"
@@ -66,7 +66,7 @@ global:
 kubeVersion: ""
 ## @param nameOverride String to partially override common.names.fullname template (will maintain the release name)
 ##
-nameOverride: "pp191225-db"
+nameOverride: "ecommerce-db"
 ## @param fullnameOverride String to fully override common.names.fullname template
 ##
 fullnameOverride: ""
