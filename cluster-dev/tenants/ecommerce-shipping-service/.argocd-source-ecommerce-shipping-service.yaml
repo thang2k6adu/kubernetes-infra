@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - ghcr.io/nguyenmanhdat006/shipping-service-ecommerce:fb0109c0f4281efaf46437ee8382e876d27f82e4
