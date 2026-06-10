@@ -57,7 +57,7 @@ ingress:
   className: "nginx"
   annotations: {}
   hosts:
-    - host: ecommerce-api-gateway.kruzetech.dev
+    - host: ecommerce-api-gateway.thang2k6adu.xyz
       paths:
         - path: /
           pathType: Prefix

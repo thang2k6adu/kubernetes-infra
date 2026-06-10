@@ -384,7 +384,7 @@ spec:
 **Add domain:**
 
 ```bash
-sudo add-domain argocd.thang2k6adu.xyz cluster-dev
+sudo add-domain ecommerce-api-gateway.thang2k6adu.xyz cluster-dev
 ```
 
 Commit rồi đẩy lên. Chờ gitops là xong.
