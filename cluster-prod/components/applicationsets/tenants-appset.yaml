@@ -20,6 +20,8 @@ spec:
   template:
     metadata:
       name: "{{path.basename}}"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
       annotations:
         argocd-image-updater.argoproj.io/image-list: backend={{ image.repository }}
         # Have to force because argocd cannot detect image running with kustomization overlay with helm
