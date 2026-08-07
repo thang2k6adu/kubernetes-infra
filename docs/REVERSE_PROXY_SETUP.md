@@ -146,7 +146,7 @@ sudo sh -c 'umask 077; wg genkey | tee /etc/wireguard/privatekey | wg pubkey > /
 sudo cat /etc/wireguard/publickey
 ```
 
-Ví dụ: `HPXXUZHlQpUpJ5ylk5K+ZjqemQajcCbYXnr7mSRv/2k=`
+Ví dụ: `Q/avQ4fi7Dd21Dh0Ex/Rwp/YjIMfgs2Q7sxRv94DRFE=`
 
 ---
 
@@ -176,38 +176,69 @@ MASTER=$(awk '/^\[master\]/{getline; print $1}' ~/k3s-inventory/hosts.ini)
 **Lấy public key map theo IP:**
 
 ```bash
-ansible -i ~/k3s-inventory/hosts.ini master:workers -b -m shell -a "cat /etc/wireguard/publickey" --one-line \
+ansible -i ~/k3s-inventory/hosts.ini master:workers -b \
+  -m shell -a "cat /etc/wireguard/publickey" --one-line \
   | awk '{print $1, $NF}' > /tmp/wg_keys.map
 
 awk -v master="$MASTER" -v vpn_net="$VPN_NET" '
-BEGIN{
-  vpn_master=11
-  vpn_worker=12
-  while((getline < "/tmp/wg_keys.map")>0){
-    keys[$1]=$2
-  }
-}
-/^\[master\]/{print; section="master"; next}
-/^\[workers\]/{print; section="workers"; next}
-/^\[/{print; next}
-NF>0{
-  ip=$1
-  line=$0
-  if(ip in keys){
-    if(section=="master"){
-      printf "%s vpn_ip=%s.%d wg_public_key=%s\n", line, vpn_net, vpn_master, keys[ip]
-      vpn_master++
+BEGIN {
+    vpn_master=11
+    vpn_worker=12
+
+    while ((getline < "/tmp/wg_keys.map") > 0) {
+        keys[$1] = $2
     }
-    else if(section=="workers"){
-      printf "%s vpn_ip=%s.%d wg_public_key=%s\n", line, vpn_net, vpn_worker, keys[ip]
-      vpn_worker++
-    }
-  } else {
-    print line
-  }
-  next
 }
-{print}
+
+/^\[master\]/ {
+    print
+    section="master"
+    next
+}
+
+/^\[workers\]/ {
+    print
+    section="workers"
+    next
+}
+
+/^\[/ {
+    print
+    next
+}
+
+NF > 0 {
+    ip = $1
+    line = $0
+
+    # Xóa giá trị cũ nếu có
+    gsub(/[[:space:]]+vpn_ip=[^[:space:]]+/, "", line)
+    gsub(/[[:space:]]+wg_public_key=[^[:space:]]+/, "", line)
+
+    if (ip in keys) {
+        if (section == "master") {
+            printf "%s vpn_ip=%s.%d wg_public_key=%s\n",
+                   line, vpn_net, vpn_master, keys[ip]
+            vpn_master++
+        }
+        else if (section == "workers") {
+            printf "%s vpn_ip=%s.%d wg_public_key=%s\n",
+                   line, vpn_net, vpn_worker, keys[ip]
+            vpn_worker++
+        }
+        else {
+            print line
+        }
+    } else {
+        print line
+    }
+
+    next
+}
+
+{
+    print
+}
 ' ~/k3s-inventory/hosts.ini > ~/k3s-inventory/hosts.tmp.ini
 ```
 
@@ -247,7 +278,7 @@ nano ~/k3s-inventory/hosts.ini
 
 ```ini
 [vps]
-13.212.50.46 ansible_user=ubuntu vpn_ip=10.10.10.1 wg_public_key=quJwDed3UjK3M4WdKi/+aJUjXOuFpBkAWHpTW47QyXc=
+18.143.115.106 ansible_user=ubuntu vpn_ip=10.10.10.1 wg_public_key=Q/avQ4fi7Dd21Dh0Ex/Rwp/YjIMfgs2Q7sxRv94DRFE=
 ```
 
 ---
@@ -466,6 +497,31 @@ AllowedIPs = 10.10.20.13/32
 ```bash
 echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
 sudo sysctl -p
+```
+
+### 1.10.1. Forward SSH (BONUS)
+
+```bash
+# Destination nat, chuyển từ ip vps sang ip node
+sudo iptables -t nat -A PREROUTING \
+    -p tcp --dport 8022 \
+    -j DNAT --to-destination 10.10.10.11:8022
+
+# Forward traffic từ vps sang node, mặc định linux có firewall cấm
+sudo iptables -A FORWARD \
+    -p tcp -d 10.10.10.11 --dport 8022 \
+    -j ACCEPT
+
+# Masquerade  (source nat), tránh node trả thẳng client mà ko qua vps, connect tới 18.xx mà 10.xx trả là sai
+sudo iptables -t nat -A POSTROUTING \
+    -d 10.10.10.11 \
+    -p tcp --dport 8022 \
+    -j MASQUERADE
+
+
+# Check
+sudo iptables -t nat -L -n -v --line-numbers
+sudo iptables -L FORWARD -n -v --line-numbers
 ```
 
 **Mở port (EC2 thì lên trang) (51820 UDP)**
