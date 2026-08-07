@@ -1,3 +1,0 @@
-kustomize:
-  images:
-  - ghcr.io/nguyenmanhdat006/notification-service-microservice:f4dc7d0d31e352e958fc4d1a1c198fe0ee0d65a4

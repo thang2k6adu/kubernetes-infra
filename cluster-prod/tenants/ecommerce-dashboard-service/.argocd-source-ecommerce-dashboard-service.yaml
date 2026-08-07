@@ -1,3 +1,0 @@
-kustomize:
-  images:
-  - ghcr.io/nguyenmanhdat006/dashboard-microservice-ecommerce:b54d5a2e852a8585ec642d67c1a05ed6eef7aa1c
