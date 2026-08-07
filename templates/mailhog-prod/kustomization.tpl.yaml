@@ -1,0 +1,15 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: {{SERVICE_NAME}}
+
+resources:
+  - namespace.yaml
+
+helmCharts:
+  - name: mailhog
+    repo: https://codecentric.github.io/helm-charts
+    version: 5.8.0
+    releaseName: prod
+    namespace: {{SERVICE_NAME}}
+    valuesFile: values.yaml
