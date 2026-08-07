@@ -200,18 +200,9 @@ if [[ ! -f "$envFile" ]]; then
     -o yaml > "$tenantDir/configmap.yaml"
   
   echo "Updating kustomization.yaml..."
-  
-  kustomizationFile="$tenantDir/kustomization.yaml"
-  if [[ -f "$kustomizationFile" ]]; then
-    # Remove existing configmap.yaml reference if exists
-    tmpFile="$tenantDir/kustomization.tmp"
-    grep -v "configmap.yaml" "$kustomizationFile" | grep -v "sealed-secret.yaml" > "$tmpFile"
-    # Add configmap.yaml back
-    echo "resources:" >> "$tmpFile"
-    echo "  - configmap.yaml" >> "$tmpFile"
-    mv "$tmpFile" "$kustomizationFile"
-  fi
-  
+
+  AddKustomizationResources "$tenantDir/kustomization.yaml" configmap.yaml
+
   echo "No secrets to seal. Operation completed."
   exit 0
 fi
@@ -251,18 +242,9 @@ if [[ ! -f "$whitelistFile" ]]; then
   rm -f "$tenantDir/config.env"
   
   echo "Updating kustomization.yaml..."
-  
-  kustomizationFile="$tenantDir/kustomization.yaml"
-  if [[ -f "$kustomizationFile" ]]; then
-    # Remove existing configmap.yaml reference if exists
-    tmpFile="$tenantDir/kustomization.tmp"
-    grep -v "configmap.yaml" "$kustomizationFile" | grep -v "sealed-secret.yaml" > "$tmpFile"
-    # Add configmap.yaml back
-    echo "resources:" >> "$tmpFile"
-    echo "  - configmap.yaml" >> "$tmpFile"
-    mv "$tmpFile" "$kustomizationFile"
-  fi
-  
+
+  AddKustomizationResources "$tenantDir/kustomization.yaml" configmap.yaml
+
   echo "Operation completed. No secrets were sealed."
   exit 0
 fi
@@ -302,7 +284,9 @@ while IFS= read -r line; do
     value="${BASH_REMATCH[2]}"
     ((++varCount))
 
-    if [[ " $whitelist " == *"$key"* ]]; then
+    # Khớp NGUYÊN dòng, không phải substring: whitelist có KATECH_AUTH_DB_PASSWORD thì biến tên
+    # PASSWORD cũng lọt nếu so bằng substring, và bị seal nhầm thay vì vào ConfigMap.
+    if grep -Fxq -- "$key" <<<"$whitelist"; then
       secretData+=("$key=$value")
     else
       configData+=("$key=$value")
@@ -354,44 +338,7 @@ if [[ ! -f "$kustomizationFile" ]]; then
   exit 1
 fi
 
-mapfile -t lines < "$kustomizationFile"
-
-hasConfigMap=false
-hasSealedSecret=false
-resourcesLine=-1
-
-for i in "${!lines[@]}"; do
-  [[ "${lines[$i]}" =~ ^[[:space:]]*-\s*configmap\.yaml ]] && hasConfigMap=true
-  [[ "${lines[$i]}" =~ ^[[:space:]]*-\s*sealed-secret\.yaml ]] && hasSealedSecret=true
-  [[ "${lines[$i]}" =~ ^resources: ]] && resourcesLine=$i
-done
-
-updatedLines=()
-
-if [[ $resourcesLine -eq -1 ]]; then
-  updatedLines=("${lines[@]}")
-  updatedLines+=("")
-  updatedLines+=("resources:")
-  updatedLines+=("  - configmap.yaml")
-  updatedLines+=("  - sealed-secret.yaml")
-else
-  for ((i=0;i<=resourcesLine;i++)); do
-    updatedLines+=("${lines[$i]}")
-  done
-
-  [[ "$hasConfigMap" == false ]] && updatedLines+=("  - configmap.yaml")
-  [[ "$hasSealedSecret" == false ]] && updatedLines+=("  - sealed-secret.yaml")
-
-  for ((i=resourcesLine+1;i<${#lines[@]};i++)); do
-    line="${lines[$i]}"
-    if [[ "$line" =~ configmap\.yaml || "$line" =~ sealed-secret\.yaml ]]; then
-      continue
-    fi
-    updatedLines+=("$line")
-  done
-fi
-
-printf "%s\n" "${updatedLines[@]}" > "$kustomizationFile"
+AddKustomizationResources "$kustomizationFile" configmap.yaml sealed-secret.yaml
 
 echo "  [+] kustomization.yaml updated"
 echo ""

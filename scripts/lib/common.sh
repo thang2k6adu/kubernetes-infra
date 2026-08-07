@@ -74,6 +74,56 @@ TestDependencies() {
   fi
 }
 
+# Chèn resource vào block `resources:` sẵn có của kustomization.yaml.
+# Template đã khai `resources: [namespace.yaml]`, nên KHÔNG được append một block `resources:`
+# thứ hai — YAML trùng key, kustomize build lỗi. Entry cũ của chính các file được chèn thì bị
+# lọc bỏ để chạy lại script nhiều lần không sinh trùng.
+AddKustomizationResources() {
+  local kustomizationFile="$1"; shift
+  local wanted=("$@")
+
+  [[ -f "$kustomizationFile" ]] || return 0
+  [[ ${#wanted[@]} -gt 0 ]] || return 0
+
+  local lines=()
+  mapfile -t lines < "$kustomizationFile"
+
+  local resourcesLine=-1 i
+  for i in "${!lines[@]}"; do
+    if [[ "${lines[$i]}" =~ ^resources: ]]; then
+      resourcesLine=$i
+      break
+    fi
+  done
+
+  local updated=() r keep
+  if [[ $resourcesLine -eq -1 ]]; then
+    updated=("${lines[@]}" "" "resources:")
+    for r in "${wanted[@]}"; do
+      updated+=("  - $r")
+    done
+  else
+    for ((i=0; i<=resourcesLine; i++)); do
+      updated+=("${lines[$i]}")
+    done
+    for r in "${wanted[@]}"; do
+      updated+=("  - $r")
+    done
+    for ((i=resourcesLine+1; i<${#lines[@]}; i++)); do
+      keep=true
+      for r in "${wanted[@]}"; do
+        if [[ "${lines[$i]}" =~ ^[[:space:]]*-[[:space:]]*"$r"[[:space:]]*$ ]]; then
+          keep=false
+          break
+        fi
+      done
+      [[ "$keep" == true ]] && updated+=("${lines[$i]}")
+    done
+  fi
+
+  printf "%s\n" "${updated[@]}" > "$kustomizationFile"
+}
+
 WriteColorOutput() {
   local Message="$1"
   local Type="${2:-Info}"

@@ -152,7 +152,9 @@ GetServiceName() {
   fi
 }
 
-clear
+# `|| true`: dưới `set -e`, clear trả non-zero khi TERM không set / TERM=dumb (CI, cron, agent)
+# và giết script ngay tại đây với exit code 0 — không tạo gì mà cũng không báo lỗi.
+clear || true
 echo "This script will deploy a service configuration to your cluster"
 echo "using GitOps pattern with ArgoCD."
 echo ""
