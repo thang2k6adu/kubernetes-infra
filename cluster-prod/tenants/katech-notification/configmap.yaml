@@ -1,0 +1,22 @@
+apiVersion: v1
+data:
+  AUTH_CLIENT_ID: notification-m2m
+  AUTH_PRODUCT_ID: notification
+  AUTH_SERVER_URL: http://prod-katech-auth-sso.katech-auth-sso.svc.cluster.local:8080
+  DB_HOST: prod-katech-db.katech-db.svc.cluster.local
+  DB_NAME: katech_notification
+  DB_PORT: "5432"
+  DB_USERNAME: katech_notification
+  IAM_BASE_URL: http://prod-katech-auth-iam.katech-auth-iam.svc.cluster.local:8080
+  KATECH_AUTH_JWT_ISSUER: https://katech-gateway.kruzetech.dev/sso
+  RABBITMQ_HOST: 103.172.237.33
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: invoices
+  REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
+  REDIS_PORT: "6379"
+  SPRING_PROFILES_ACTIVE: prod
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: katech-notification-config
+  namespace: katech-notification
