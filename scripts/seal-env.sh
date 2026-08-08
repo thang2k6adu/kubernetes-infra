@@ -350,21 +350,31 @@ kubectl create configmap "$configMapName" \
 
 echo "  [+] configmap.yaml created"
 
-echo "Creating Secret..."
-kubectl create secret generic "$secretName" \
-  --from-env-file=secret.env \
-  -n "$namespace" \
-  --dry-run=client \
-  -o yaml > secret.yaml
-
-echo "  [+] secret.yaml created"
-
-echo "Sealing Secret with kubeseal..."
-kubeseal --cert "$CertPath" --namespace "$namespace" --format yaml < secret.yaml > sealed-secret.yaml
-
-echo "  [+] sealed-secret.yaml created"
-
 kustomizationExtras=()
+
+# kubeseal abort khi Secret rỗng, nên service không có secret riêng (FE, service
+# chỉ có config công khai) sẽ chết ở đây nếu không bọc điều kiện.
+if ((${#secretData[@]})); then
+  echo "Creating Secret..."
+  kubectl create secret generic "$secretName" \
+    --from-env-file=secret.env \
+    -n "$namespace" \
+    --dry-run=client \
+    -o yaml > secret.yaml
+
+  echo "  [+] secret.yaml created"
+
+  echo "Sealing Secret with kubeseal..."
+  kubeseal --cert "$CertPath" --namespace "$namespace" --format yaml < secret.yaml > sealed-secret.yaml
+  kustomizationExtras+=(sealed-secret.yaml)
+
+  echo "  [+] sealed-secret.yaml created"
+else
+  # Dọn file cũ: service từng có secret rồi bỏ hết mà để lại file thì cluster
+  # vẫn giữ một Secret không còn ai khai báo.
+  rm -f sealed-secret.yaml
+  echo "  [-] không có secret nào, bỏ qua sealed-secret.yaml"
+fi
 if [[ -n "$registryUser" && -n "$registryPassword" ]]; then
   echo "Sealing image pull secret..."
   kubectl create secret docker-registry katech-registry \
@@ -390,7 +400,7 @@ if [[ ! -f "$kustomizationFile" ]]; then
   exit 1
 fi
 
-AddKustomizationResources "$kustomizationFile" configmap.yaml sealed-secret.yaml "${kustomizationExtras[@]}"
+AddKustomizationResources "$kustomizationFile" configmap.yaml "${kustomizationExtras[@]}"
 
 echo "  [+] kustomization.yaml updated"
 echo ""
