@@ -8,10 +8,15 @@ resources:
   - sealed-secret.yaml
   - namespace.yaml
 
+# Chart vendor trong repo (cluster-*/charts) thay vì helm pull mỗi lần sync:
+# kustomize giải nén chart vào chính thư mục đang render, mà ArgoCD repo-server
+# dùng lại cache giữa các lần sync — render đứt giữa chừng một lần là lần sau
+# "failed to untar: ... already exists" và Application kẹt ComparisonError.
+helmGlobals:
+  chartHome: ../../charts
+
 helmCharts:
   - name: backend-service-chart
-    repo: https://thang2k6adu.github.io/backend-service-charts
-    version: 0.1.0
     releaseName: prod
     namespace: ecommerce-user-service
     valuesFile: values.yaml
