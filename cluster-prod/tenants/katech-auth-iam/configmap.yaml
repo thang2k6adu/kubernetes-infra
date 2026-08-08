@@ -1,0 +1,21 @@
+apiVersion: v1
+data:
+  AUTH_PRODUCT_ID: iam
+  AUTH_SERVER_URL: http://prod-katech-auth-sso.katech-auth-sso.svc.cluster.local:8080
+  IAM_BOOTSTRAP_PLATFORM_ADMIN_SSO_USER_ID: b5525f24-b172-4dd0-bd91-3127a43b51fd
+  KATECH_AUTH_JWT_ISSUER: https://katech-gateway.kruzetech.dev/sso
+  KATECH_CORS_ENABLED: "false"
+  RABBITMQ_HOST: 103.172.237.33
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: invoices
+  SERVER_PORT: "8080"
+  SPRING_DATA_REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
+  SPRING_DATA_REDIS_PORT: "6379"
+  SPRING_DATASOURCE_URL: jdbc:postgresql://prod-katech-db.katech-db.svc.cluster.local:5432/katech_iam
+  SPRING_DATASOURCE_USERNAME: katech_iam
+  SPRING_PROFILES_ACTIVE: prod
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: katech-auth-iam-config
+  namespace: katech-auth-iam
