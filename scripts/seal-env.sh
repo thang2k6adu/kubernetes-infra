@@ -216,12 +216,23 @@ if [[ ! -f "$whitelistFile" ]]; then
   envLines=$(grep -v '^\s*#' "$envFile" | grep -v '^\s*$')
   configData=()
   varCount=0
-  
+  registryServer=""
+  registryUser=""
+  registryPassword=""
+
   while IFS= read -r line; do
     if [[ "$line" =~ ^([^=]+)=(.*)$ ]]; then
       key="$(echo "${BASH_REMATCH[1]}" | xargs)"
       value="${BASH_REMATCH[2]}"
       ((++varCount))
+
+      # REGISTRY_* dùng để dựng imagePullSecret, không được vào ConfigMap plaintext.
+      case "$key" in
+        REGISTRY_SERVER)   registryServer="$value";   continue ;;
+        REGISTRY_USER)     registryUser="$value";     continue ;;
+        REGISTRY_PASSWORD) registryPassword="$value"; continue ;;
+      esac
+
       configData+=("$key=$value")
     else
       echo "Skipping invalid line in .env: $line"
@@ -240,10 +251,25 @@ if [[ ! -f "$whitelistFile" ]]; then
     -o yaml > "$tenantDir/configmap.yaml"
   
   rm -f "$tenantDir/config.env"
-  
+
+  kustomizationExtras=()
+  if [[ -n "$registryUser" && -n "$registryPassword" ]]; then
+    echo "Sealing image pull secret..."
+    kubectl create secret docker-registry katech-registry \
+      --docker-server="${registryServer:-registry.kruzetech.dev}" \
+      --docker-username="$registryUser" \
+      --docker-password="$registryPassword" \
+      -n "$namespace" \
+      --dry-run=client \
+      -o yaml \
+    | kubeseal --cert "$CertPath" --namespace "$namespace" --format yaml > "$tenantDir/registry-secret.yaml"
+    kustomizationExtras+=(registry-secret.yaml)
+    echo "  [+] registry-secret.yaml created"
+  fi
+
   echo "Updating kustomization.yaml..."
 
-  AddKustomizationResources "$tenantDir/kustomization.yaml" configmap.yaml
+  AddKustomizationResources "$tenantDir/kustomization.yaml" configmap.yaml "${kustomizationExtras[@]}"
 
   echo "Operation completed. No secrets were sealed."
   exit 0
@@ -277,12 +303,23 @@ whitelist=$(grep -v '^\s*#' "$whitelistFile" | grep -v '^\s*$' | sed 's/^[ \t]*/
 secretData=()
 configData=()
 varCount=0
+registryServer=""
+registryUser=""
+registryPassword=""
 
 while IFS= read -r line; do
   if [[ "$line" =~ ^([^=]+)=(.*)$ ]]; then
     key="$(echo "${BASH_REMATCH[1]}" | xargs)"
     value="${BASH_REMATCH[2]}"
     ((++varCount))
+
+    # REGISTRY_* chỉ dùng để dựng imagePullSecret, không được rơi vào configData
+    # (plaintext trong configmap.yaml) lẫn secretData (lộ vào env của app).
+    case "$key" in
+      REGISTRY_SERVER)   registryServer="$value";   continue ;;
+      REGISTRY_USER)     registryUser="$value";     continue ;;
+      REGISTRY_PASSWORD) registryPassword="$value"; continue ;;
+    esac
 
     # Khớp NGUYÊN dòng, không phải substring: whitelist có KATECH_AUTH_DB_PASSWORD thì biến tên
     # PASSWORD cũng lọt nếu so bằng substring, và bị seal nhầm thay vì vào ConfigMap.
@@ -327,6 +364,21 @@ kubeseal --cert "$CertPath" --namespace "$namespace" --format yaml < secret.yaml
 
 echo "  [+] sealed-secret.yaml created"
 
+kustomizationExtras=()
+if [[ -n "$registryUser" && -n "$registryPassword" ]]; then
+  echo "Sealing image pull secret..."
+  kubectl create secret docker-registry katech-registry \
+    --docker-server="${registryServer:-registry.kruzetech.dev}" \
+    --docker-username="$registryUser" \
+    --docker-password="$registryPassword" \
+    -n "$namespace" \
+    --dry-run=client \
+    -o yaml \
+  | kubeseal --cert "$CertPath" --namespace "$namespace" --format yaml > registry-secret.yaml
+  kustomizationExtras+=(registry-secret.yaml)
+  echo "  [+] registry-secret.yaml created"
+fi
+
 cleanup
 
 # Update kustomization.yaml
@@ -338,7 +390,7 @@ if [[ ! -f "$kustomizationFile" ]]; then
   exit 1
 fi
 
-AddKustomizationResources "$kustomizationFile" configmap.yaml sealed-secret.yaml
+AddKustomizationResources "$kustomizationFile" configmap.yaml sealed-secret.yaml "${kustomizationExtras[@]}"
 
 echo "  [+] kustomization.yaml updated"
 echo ""

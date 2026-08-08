@@ -177,44 +177,147 @@ cd pp191225-api
 
 ### Step 2: Create Required Files
 
-create values.yaml
+**1. `values.yaml`** — Helm values.
 
 **2. `.env`** (environment variables):
 ```bash
-# Create .env file with your environment variables
 cat > .env << EOF
 DATABASE_URL=postgresql://user:pass@db:5432/mydb
 REDIS_HOST=redis-service
 LOG_LEVEL=info
 API_KEY=supersecretkey
 OTHER_CONFIG=value
+
+# Chỉ thêm khi image nằm ở registry private, để sinh imagePullSecret.
+
+REGISTRY_SERVER=registry.kruzetech.dev
+REGISTRY_USER=<nexus-user>
+REGISTRY_PASSWORD=<nexus-pass>
 EOF
 ```
 
 **3. `secrets.whitelist`** (secrets to encrypt):
 ```bash
-# Create secrets.whitelist file listing variables to encrypt
 cat > secrets.whitelist << EOF
 DATABASE_URL
 API_KEY
+
+REGISTRY_USER
+REGISTRY_PASSWORD
 EOF
 ```
 
 ### Step 3: Run Deployment Script
 
-From the repository root, run the deployment script:
+From the repository root:
 
 ```bash
-# Interactive mode (follow prompts)
+./scripts/create-tenant.sh \
+  --ClusterName cluster-prod \
+  --ProjectName katech-xyz \
+  --TemplateName backend-prod \
+  --CertPath cluster-prod/pub-cert.pem
+```
+
+Bỏ tham số thì script hỏi lần lượt cluster → service → template:
+
+```bash
 ./scripts/create-tenant.sh
 ```
 
+Service name ưu tiên `nameOverride` -> `fullnameOverride` -> fallback về `--ProjectName`.
+
 ### Step 4: Verify and Commit
 
+Kiểm tra thư mục sinh ra tại `cluster-{name}/tenants/{service}/`:
 
-creat a seal secret
+```
+namespace.yaml
+kustomization.yaml
+values.yaml
+configmap.yaml          # biến không nằm trong whitelist
+sealed-secret.yaml      # biến trong whitelist
+registry-secret.yaml    # imagePullSecret, chỉ có khi .env khai REGISTRY_USER + REGISTRY_PASSWORD
+```
 
-kubeseal --cert cluster-prod/pub-cert.pem -o yaml \
-< secrets.yaml > sealed-secrets.yaml
+Render thử trước khi commit:
 
-servicename ưu tiên name override -> fullname override -> fallback về project name (tham số truyền lúc chạy script)
+```bash
+kubectl kustomize --enable-helm cluster-prod/tenants/katech-xyz
+```
+
+Commit rồi push. ApplicationSet `tenants` quét `cluster-{name}/tenants/*` nên tự tạo
+Application mới, không phải khai báo gì thêm.
+
+## Xoay mật khẩu registry / backfill tenant đã có
+
+Tenant đã tồn tại thì **đừng chạy lại `create-tenant.sh`** — kubeseal đổi ciphertext mỗi
+lần seal nên toàn bộ secret sẽ hiện thành thay đổi dù nội dung không đổi. Dùng:
+
+```bash
+./scripts/seal-registry-creds.sh --ClusterName cluster-prod
+```
+
+Script chỉ ghi lại `registry-secret.yaml`, thêm vào `kustomization.yaml`, và cập nhật
+`REGISTRY_*` trong `.env` của từng service. Tên secret đọc từ `imagePullSecrets` trong
+`values.yaml`, nên tenant nào không khai thì tự được bỏ qua.
+
+Xem trước danh sách mà không ghi gì:
+
+```bash
+./scripts/seal-registry-creds.sh --ClusterName cluster-prod --DryRun
+```
+
+## Sealed secret cho core component
+
+Secret của `cluster-{name}/core/*` seal thủ công, mỗi credential một file để xoay cái này
+không phải đụng cái kia:
+
+```bash
+cd cluster-prod/core/argocd-image-updater
+cp registry-creds.example.yaml registry-creds.secret.yaml   # *.secret.yaml đã gitignore
+# điền giá trị thật
+
+kubeseal --cert ../../pub-cert.pem -o yaml \
+  < registry-creds.secret.yaml > registry-creds.sealed.yaml
+
+rm registry-creds.secret.yaml
+```
+
+Dùng `>` ghi đè, không phải `>>`. SealedSecret mặc định là strict scope (gắn chặt
+namespace + name) nên không tái dùng được bản đã seal cho namespace khác.
+
+# CD: image mới lên cluster thế nào
+
+`argocd-image-updater` quét registry mỗi 2 phút, không dùng webhook.
+
+```
+1  git push main (repo service)
+2  GitHub Actions -> registry.kruzetech.dev/<service>:git-<sha 40 hex>
+3  image-updater: GET /v2/<repo>/tags/list
+     · credential: registries.conf -> secret:argocd/katech-registry-creds#creds
+     · lọc: allow-tags  regexp:^(git-)?[0-9a-f]{40}$
+     · chọn: update-strategy newest-build
+4  commit .argocd-source-<app>.yaml vào cluster-prod/tenants/<tenant>/
+     · credential: git:secret:argocd/argocd-repo-creds  (PAT GitHub)
+5  ArgoCD sync (automated, prune + selfHeal)
+6  kubelet pull image bằng imagePullSecret katech-registry
+```
+
+**Quy ước tag là `git-<sha đầy đủ 40 ký tự>`.** Tag không khớp regex vẫn push lên registry
+bình thường, chỉ là không được auto-deploy — đó là chủ đích, để build ở máy local không
+tự đẩy lên prod.
+
+Bước 3 và bước 6 dùng hai secret khác nhau, cùng mật khẩu Nexus nhưng khác mục đích:
+
+| Secret | Namespace | Type | Ai dùng |
+|---|---|---|---|
+| `katech-registry-creds` | `argocd` | `Opaque` (chuỗi `user:pass`) | image-updater đọc registry API |
+| `katech-registry` | namespace tenant | `dockerconfigjson` | kubelet pull image |
+
+Sửa `registries.conf` xong phải restart, vì image-updater chỉ đọc file này lúc khởi động:
+
+```bash
+kubectl rollout restart -n argocd deploy/argocd-image-updater
+kubectl logs -n argocd deploy/argocd-image-updater -f
+```

@@ -27,7 +27,7 @@ spec:
         # Have to force because argocd cannot detect image running with kustomization overlay with helm
         # have to fix later
         argocd-image-updater.argoproj.io/backend.force-update: "true"
-        argocd-image-updater.argoproj.io/backend.allow-tags: regexp:^[0-9a-f]{40}$
+        argocd-image-updater.argoproj.io/backend.allow-tags: regexp:^(git-)?[0-9a-f]{40}$
         argocd-image-updater.argoproj.io/backend.update-strategy: newest-build
         argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/argocd-repo-creds
     spec:
