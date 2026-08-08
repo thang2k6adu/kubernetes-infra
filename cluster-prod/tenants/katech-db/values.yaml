@@ -549,11 +549,11 @@ primary:
   ## Example:
   resources:
     requests:
-      cpu: 500m
+      cpu: "1"
       memory: 1024Mi
     limits:
-      cpu: "2"
-      memory: 2048Mi
+      cpu: "1"
+      memory: 1024Mi
   ##
   ## Pod Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/

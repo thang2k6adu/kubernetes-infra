@@ -1,0 +1,23 @@
+# Credential Git để image-updater commit ngược tag mới về repo (write-back).
+# Tương ứng annotation: write-back-method: git:secret:argocd/argocd-repo-creds
+#
+# Quy trình xoay PAT:
+#   cp repo-creds.example.yaml repo-creds.secret.yaml   # file .secret.yaml đã gitignore
+#   # điền PAT thật vào repo-creds.secret.yaml
+#   kubeseal --cert cluster-prod/pub-cert.pem -o yaml \
+#     < repo-creds.secret.yaml > repo-creds.sealed.yaml
+#   rm repo-creds.secret.yaml
+#
+# Dùng `>` (ghi đè) chứ không phải `>>`, vì mỗi secret giờ nằm ở file riêng.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-repo-creds
+  namespace: argocd
+  labels:
+    argocd.argoproj.io/secret-type: repo-creds
+type: Opaque
+stringData:
+  url: https://github.com/thang2k6adu
+  username: thang2k6adu
+  password: ghp_xxxxxxxxxxxxxxxxxxxxx   # đây là PAT, cần scope `repo`

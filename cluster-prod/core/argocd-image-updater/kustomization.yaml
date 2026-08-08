@@ -3,6 +3,14 @@ kind: Kustomization
 
 namespace: argocd
 
+# Mỗi secret một file riêng: xoay PAT GitHub không phải đụng tới credential
+# Nexus và ngược lại. Seal file nào thì ghi đè đúng file .sealed.yaml đó.
 resources:
   - install.yaml
-  - sealed-secrets.yaml
+  - repo-creds.sealed.yaml
+  # Bỏ comment sau khi seal registry-creds.example.yaml thành file này.
+  # Chưa có file mà khai ở đây thì kustomize build lỗi -> ArgoCD sync fail.
+  - registry-creds.sealed.yaml
+
+patches:
+  - path: registries-conf-patch.yaml

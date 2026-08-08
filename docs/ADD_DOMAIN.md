@@ -359,7 +359,7 @@ nginx -t && systemctl reload nginx
 ### Remove domain
 
 ```bash
-DOMAIN=katech-admin-ui.kruzetech.dev
+DOMAIN=nexus.kruzetech.dev
 
 sudo rm -f /etc/nginx/sites-enabled/$DOMAIN
 sudo rm -f /etc/nginx/sites-available/$DOMAIN

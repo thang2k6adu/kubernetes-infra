@@ -1,0 +1,29 @@
+# Credential Nexus để image-updater ĐỌC danh sách tag qua registry API.
+# Tương ứng registries.conf: credentials: secret:argocd/katech-registry-creds#creds
+#
+# Khác hoàn toàn với imagePullSecret `katech-registry` ở namespace tenant:
+#   - bản ở ns tenant    -> kubelet pull image lúc tạo pod, type dockerconfigjson
+#   - bản này ở ns argocd -> image-updater gọi GET /v2/<repo>/tags/list,
+#                            chỉ cần chuỗi user:pass nên để Opaque cho dễ đọc
+#
+# Phải có bản riêng ở ns argocd vì Role của image-updater là namespaced, không
+# đọc được Secret ở namespace khác. Và SealedSecret là strict scope (gắn chặt
+# namespace + name) nên không tái dùng bản đã seal cho ns tenant được.
+#
+# Quy trình xoay mật khẩu Nexus:
+#   cp registry-creds.example.yaml registry-creds.secret.yaml
+#   # điền user/pass thật
+#   kubeseal --cert cluster-prod/pub-cert.pem -o yaml \
+#     < registry-creds.secret.yaml > registry-creds.sealed.yaml
+#   rm registry-creds.secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: katech-registry-creds
+  namespace: argocd
+type: Opaque
+stringData:
+  # Format "<user>:<password>". Image-updater cắt ở dấu ':' đầu tiên.
+  # Phải một dòng + bọc nháy kép; dùng block scalar (`creds: |`) sẽ dính '\n'
+  # cuối chuỗi và image-updater đọc field nguyên si không trim -> auth fail.
+  creds: "nexus-user:nexus-password"

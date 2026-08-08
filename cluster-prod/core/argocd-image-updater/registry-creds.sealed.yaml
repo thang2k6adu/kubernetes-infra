@@ -1,0 +1,14 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: katech-registry-creds
+  namespace: argocd
+spec:
+  encryptedData:
+    creds: AgBm1Ox5rVpZsbOEWXYu2YLqbdTkYSmKLStI7tgYJGH8w8GsB5lt/OXMmILc9YoEZfzJmIKKJf0Z5Gj7npif05Bpgt0uLU4aIvKG4mb1NcP025af59O8XnVqExfNEs/cGl74O4z8ti/+2DTXRi+y3e5mlu4U27IUC/X85RZX3R+AD7FUlKkFujEF52T0bVt23SWbQXy9/uTrOdMhDJ/PfcWvudW47PAvtLPrj2yfivA/DPRga6YPAZ1lezQAEcMhbKjogkKE70jGEYhGcGwzcWR6/EW8YL+Xbe0iWt68xvRCHpajrE+SsiXilLf0a6NCAmIDvPEqLRIbgfCJVDca9Uc5LtBArbkAm+XgQpwlrbmwgq56zHy9Dsa3K3F4edkxapgmDhVs8sYMw32+P0XJK7xvpyjfIuk5RP8rydb+IPyb6l4cP2wrAC3xLQTJuksmwkgodYkmc3diI5V39HiwxRs/Avc+CBNuw9rXyDlyTGaVmt89Lo2QSEHDL9rzG68r4HJGe+OhpRF7fw5Yz7AtfdAQ4H6VtN8KwkF+msrr4DJfC1gzZk8FMpQ5enpK+mJRho4MBEqYXEXaZQeXmmanYnwW+UDuiG8/+1KK7x1C35arIr87qWqR91upZ001d7MIQsCs/aBw0U2gtVy0y5pMMTX3iKQdrZnk1s3MScQjESxQBwjvi7dJ08zOU8mA8aAfuGZMkPpCodzhOthIut8EebghxnFOEz6G
+  template:
+    metadata:
+      name: katech-registry-creds
+      namespace: argocd
+    type: Opaque

@@ -326,10 +326,10 @@ master:
   ##
   resources:
     requests:
-      cpu: 100m
-      memory: 256Mi
+      cpu: 250m
+      memory: 512Mi
     limits:
-      cpu: 500m
+      cpu: 250m
       memory: 512Mi
   ## Configure Pods Security Context
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-pod

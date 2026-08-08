@@ -1,3 +1,11 @@
 # Ignore all env files everywhere
 .env
 **/.env
+
+# Secret thật (plaintext) dùng làm input cho kubeseal.
+# Chỉ commit bản *.example.yaml và bản đã seal *.sealed.yaml.
+secrets.yaml
+**/secrets.yaml
+**/*.secret.yaml
+!**/secrets.example.yaml
+!**/*.example.yaml

@@ -62,18 +62,18 @@ service:
       name: docker
       containerPort: 5000
       hosts:
-        - docker.kruzetech.dev
-  #   - port: 8082
-  #     name: docker-group
-  #     containerPort: 8082
-  #     hosts:
-  #       - nexus-docker.local
-  #   - port: 8083
-  #     name: docker-hosted
-  #     containerPort: 8083
-  #     hosts:
-  #       - nexus-docker-hosted-1.local
-  #       - nexus-docker-hosted-2.local
+        - registry.kruzetech.dev
+        #   - port: 8082
+        #     name: docker-group
+        #     containerPort: 8082
+        #     hosts:
+        #       - nexus-docker.local
+        #   - port: 8083
+        #     name: docker-hosted
+        #     containerPort: 8083
+        #     hosts:
+        #       - nexus-docker-hosted-1.local
+        #       - nexus-docker-hosted-2.local
 ingress:
   # -- If `true`, create an `Ingress` resource.
   enabled: true
@@ -237,11 +237,11 @@ extraVolumeMounts: []
 # -- Resources for the default container.
 resources:
   requests:
-    cpu: 500m
-    memory: 2Gi
+    cpu: "1"
+    memory: 2560Mi
   limits:
-    cpu: "2"
-    memory: 4Gi
+    cpu: "1"
+    memory: 2560Mi
 # We usually recommend not to specify default resources and to leave this as a conscious
 # choice for the user. This also increases chances charts run on environments with little
 # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -254,7 +254,13 @@ resources:
 #     memory: 128Mi
 
 # -- Resources for the init containers (not sidecars).
-initResources: {}
+initResources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 50m
+    memory: 64Mi
 # -- Extra init container to run before the default container.
 extraInitContainers: []
 # -- Node labels to match for pod scheduling.
@@ -293,9 +299,15 @@ logback:
   maxHistory: 30
 tailLogs:
   # -- Resources for the log tailing containers.
-  resources: {}
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 10m
+      memory: 32Mi
 # -- Env configuration for the _Nexus3_ container.
-install4jAddVmParams: -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=2048m
+install4jAddVmParams: -Xms1024m -Xmx1024m -XX:MaxDirectMemorySize=1024m
 caCerts:
   # -- If `true`, add the CA certificates in the provided secret to the JVM cacerts key store.
   enabled: false

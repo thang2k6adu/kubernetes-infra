@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: argocd-image-updater-config
+data:
+  registries.conf: |
+    registries:
+    - name: Kruzetech Nexus
+      prefix: registry.kruzetech.dev
+      api_url: https://registry.kruzetech.dev
+      credentials: secret:argocd/katech-registry-creds#creds
+      credsexpire: 10h
