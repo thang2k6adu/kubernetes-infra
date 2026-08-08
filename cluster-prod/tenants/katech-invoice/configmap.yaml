@@ -1,0 +1,24 @@
+apiVersion: v1
+data:
+  AUTH_CLIENT_ID: invoice-m2m
+  AUTH_PRODUCT_ID: invoice
+  AUTH_SERVER_URL: http://prod-katech-auth-sso.katech-auth-sso.svc.cluster.local:8080
+  BKAV_BASE_URL: https://wsdemo.ehoadon.vn
+  BKAV_PARTNER_GUID: cd2b1c27-a7bd-469b-b02b-3e9075c01ee7
+  DB_HOST: prod-katech-db.katech-db.svc.cluster.local
+  DB_NAME: katech_invoice
+  DB_PORT: "5432"
+  DB_USERNAME: katech_invoice
+  IAM_BASE_URL: http://prod-katech-auth-iam.katech-auth-iam.svc.cluster.local:8080
+  KATECH_AUTH_JWT_ISSUER: https://katech-gateway.kruzetech.dev/sso
+  RABBITMQ_HOST: 103.172.237.33
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: invoices
+  REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
+  REDIS_PORT: "6379"
+  SPRING_PROFILES_ACTIVE: prod
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: katech-invoice-config
+  namespace: katech-invoice
