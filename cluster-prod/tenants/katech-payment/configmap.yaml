@@ -1,0 +1,45 @@
+apiVersion: v1
+data:
+  AUTH_CLIENT_ID: payment-m2m
+  AUTH_PRODUCT_ID: payment
+  AUTH_SERVER_URL: http://prod-katech-auth-sso.katech-auth-sso.svc.cluster.local:8080
+  DB_HOST: prod-katech-db.katech-db.svc.cluster.local
+  DB_NAME: katech_payment
+  DB_PORT: "5432"
+  DB_USERNAME: katech_payment
+  IAM_BASE_URL: http://prod-katech-auth-iam.katech-auth-iam.svc.cluster.local:8080
+  KATECH_AUTH_JWT_ISSUER: https://katech-gateway.kruzetech.dev/sso
+  PAYMENT_PUBLIC_BASE_URL: https://katech-gateway.kruzetech.dev/payment/api/ewallet
+  RABBITMQ_HOST: 103.172.237.33
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: invoices
+  REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
+  REDIS_PORT: "6379"
+  SPRING_PROFILES_ACTIVE: prod
+  VNPAY_ALLOWED_FRONTEND_RETURN_URLS: https://katech-storefront.kruzetech.dev,http://localhost:3000
+  VNPAY_FRONTEND_RETURN_URL: https://katech-storefront.kruzetech.dev/
+  VNPAY_IPN_ENABLED: "true"
+  VNPAY_IPN_FALLBACK_ENABLED: "true"
+  VNPAY_IPN_FALLBACK_FORCE_NOTIFY: "true"
+  VNPAY_IPN_FALLBACK_RETRY_ATTEMPTS: "3"
+  VNPAY_IPN_FALLBACK_RETRY_DELAY_MS: "500"
+  VNPAY_IPN_URL: https://katech-gateway.kruzetech.dev/payment/api/ewallet/public/payments/vnpay/ipn
+  VNPAY_MOBILE_RETURN_URL: https://katech-gateway.kruzetech.dev/payment/api/ewallet/public/payments/mobile/return
+  VNPAY_PAY_URL: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+  VNPAY_RECONCILIATION_BATCH_SIZE: "20"
+  VNPAY_RECONCILIATION_ENABLED: "true"
+  VNPAY_RECONCILIATION_INTERVAL: "300000"
+  VNPAY_RECONCILIATION_MAX_AGE_MINUTES: "15"
+  VNPAY_REFUND_RECONCILIATION_BATCH_SIZE: "10"
+  VNPAY_REFUND_RECONCILIATION_ENABLED: "true"
+  VNPAY_REFUND_RECONCILIATION_INTERVAL: "300000"
+  VNPAY_REFUND_RECONCILIATION_MAX_AGE_MINUTES: "5"
+  VNPAY_REFUND_RECONCILIATION_MAX_PROCESSING_MINUTES: "60"
+  VNPAY_REFUND_URL: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+  VNPAY_RETURN_URL: https://katech-gateway.kruzetech.dev/payment/api/ewallet/public/payments/vnpay/return
+  VNPAY_TMN_CODE: Q0GJ09YA
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: katech-payment-config
+  namespace: katech-payment
