@@ -1,0 +1,42 @@
+apiVersion: v1
+data:
+  DEPLOYMENT_MODE: standalone
+  ENTITLEMENT_BASE_URL: http://prod-katech-entitlement.katech-entitlement.svc.cluster.local:8250
+  FEATURE_DATA_EXPORT: "true"
+  FEATURE_MFA: "true"
+  FEATURE_SELF_SERVICE: "true"
+  FEATURE_SOCIAL_LOGIN: "true"
+  FEATURE_USER_IMPORT: "true"
+  FEATURE_WEBHOOK: "true"
+  IAM_BASE_URL: http://prod-katech-auth-iam.katech-auth-iam.svc.cluster.local:8080
+  KATECH_AUTH_ADMIN_UI_URL: https://katech-admin-ui.kruzetech.dev
+  KATECH_AUTH_DEFAULT_SUCCESS_URL: https://katech-admin-ui.kruzetech.dev
+  KATECH_AUTH_JWT_ISSUER: https://katech-gateway.kruzetech.dev/sso
+  KATECH_AUTH_JWT_KID: dev-key
+  KATECH_AUTH_JWT_PUBLIC_KEY: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtEoDJ9q1twqXHJ9sdhE/eeqIqK4IPqRysKZFiujnVSkfz77GCh8MSIYC6AewsVBGJNaESmZPeMNZEEbQPdM9lZWjLkfCYw8KfZqO70OV5tb+2+QMWks0md9lKS96pqxaUD3l1jIFiGIPGjj4baP58iDTmYvOpngpmEgH3c3zfY65rm8XWG0BUXTlKkO0vponGQIumU6IKnIOWZAiqImMZqFzlMgGg4DkapC/tQ7858IeDrpCqZ6vJXUZzvPywlygayFBb0P96GU8KxLR/882Ra8gkl5d8X0CLGZ1ZRYqXqFc3MqQ5PMZtCo5tOw3EYP6DlI6HApiOIxl3cE5aNiQ3QIDAQAB
+  KATECH_AUTH_MAIL_FROM: katechdevbe@gmail.com
+  KATECH_AUTH_WEBAUTHN_ORIGIN: https://katech-admin-ui.kruzetech.dev
+  KATECH_BOOTSTRAP_M2M_PRODUCT_ID: gateway
+  KATECH_BOOTSTRAP_UI_CLIENT_ID: admin-ui
+  KATECH_CORS_ENABLED: "false"
+  KATECH_PLATFORM_CLIENTS_BOOTSTRAP_UI_POST_LOGOUT_URIS: https://katech-admin-ui.kruzetech.dev/,http://localhost:5174/,http://localhost:5174/logged-out
+  KATECH_PLATFORM_CLIENTS_BOOTSTRAP_UI_REDIRECT_URIS: https://katech-admin-ui.kruzetech.dev/auth/callback,http://localhost:5174/auth/callback
+  RABBITMQ_HOST: 103.172.237.33
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: invoices
+  SERVER_PORT: "8080"
+  SPRING_DATA_REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
+  SPRING_DATA_REDIS_PORT: "6379"
+  SPRING_DATASOURCE_URL: jdbc:postgresql://prod-katech-db.katech-db.svc.cluster.local:5432/katech_auth
+  SPRING_DATASOURCE_USERNAME: katech_auth
+  SPRING_MAIL_HOST: prod-katech-mailhog.katech-mailhog.svc.cluster.local
+  SPRING_MAIL_PORT: "1025"
+  SPRING_MAIL_SMTP_AUTH: "false"
+  SPRING_MAIL_SMTP_STARTTLS_ENABLE: "false"
+  SPRING_MAIL_SMTP_STARTTLS_REQUIRED: "false"
+  SPRING_PROFILES_ACTIVE: prod
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: katech-auth-sso-config
+  namespace: katech-auth-sso
