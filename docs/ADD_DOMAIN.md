@@ -81,12 +81,27 @@ map $http_upgrade $connection_upgrade {
     '' close;
 }
 
-# Phân biệt REST vs websocket theo header Upgrade, KHÔNG theo path
-# (path socket không cố định giữa các service - có thể /, /api, /sso/api...)
-# Request websocket sẽ có key rỗng -> limit_req bỏ qua, không rate limit
-map $http_upgrade $limit_key {
-    default $binary_remote_addr;
-    'websocket' '';
+# --- Rate limit key ---
+# Bỏ qua rate limit cho: (1) websocket, (2) static asset.
+# KHÔNG whitelist theo path /api vì path mỗi service khác nhau (/, /api, /sso/api...)
+# -> mặc định LIMIT, chỉ loại trừ cái chắc chắn an toàn (fail-closed).
+# Whitelist theo path là fail-open: domain nào có API ở root sẽ mất sạch rate limit.
+map $http_upgrade $no_limit_ws {
+    default     0;
+    'websocket' 1;
+}
+
+# Dùng $uri (đã decode + normalize, không kèm query) chứ KHÔNG dùng $request_uri:
+# $request_uri là chuỗi thô, `//api/x`, `/./api/x`, `/%61pi/x` sẽ né được regex.
+map $uri $no_limit_static {
+    default 0;
+    ~*\.(?:css|js|mjs|map|png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|eot)$ 1;
+}
+
+# Cả hai đều 0 mới sinh key -> mới bị limit. Key rỗng = limit_req bỏ qua.
+map $no_limit_ws$no_limit_static $limit_key {
+    default '';
+    '00'    $binary_remote_addr;
 }
 
 include /etc/nginx/conf.d/*.conf;
@@ -156,10 +171,30 @@ sudo nano /etc/nginx/conf.d/rate_limit.conf
 **Nội dung `/etc/nginx/conf.d/rate_limit.conf`:**
 
 ```nginx
-# Key dùng $limit_key (map ở nginx.conf) thay vì $binary_remote_addr trực tiếp,
-# để tự động bỏ qua rate limit cho request websocket (Upgrade header)
-limit_req_zone $limit_key zone=api_limit:10m rate=10r/s;
+# Key dùng $limit_key (chuỗi map ở nginx.conf) thay vì $binary_remote_addr trực tiếp:
+#   - request websocket              -> key rỗng -> không limit
+#   - static asset (.js/.css/ảnh/font) -> key rỗng -> không limit
+# Nhờ vậy 1 lần load SPA (40-80 file tĩnh bắn gần như đồng thời) không còn
+# đốt hết burst rồi ăn lỗi -> trang trắng / vỡ CSS.
+limit_req_zone $limit_key zone=api_limit:10m rate=30r/s;
+
+# Mặc định nginx trả 503; 429 đúng semantic hơn và client biết đường retry.
+limit_req_status 429;
 ```
+
+**Vì sao không whitelist `~^/api/`:**
+
+| | whitelist `~^/api/` | blacklist theo đuôi file (đang dùng) |
+|---|---|---|
+| Service có API ở `/` hoặc `/sso/api` | mất sạch rate limit | vẫn được bảo vệ |
+| Endpoint mới (`/graphql`, `/v2/...`) | tuột lưới, im lặng | tự động được bảo vệ |
+| Fail mode | fail-open | fail-closed (tệ nhất là limit oan, thấy ngay) |
+
+Điểm yếu duy nhất của cách theo đuôi file: gọi `/api/heavy/x.js` để né limit — chỉ ăn
+thua nếu backend bỏ qua path thừa. Đổi lại không domain nào bị hở hoàn toàn.
+
+`30r/s` + `burst=60` là mức khởi điểm cho edge dùng chung nhiều domain; siết lại sau
+khi có số liệu từ log (`grep 'limiting requests' /var/log/nginx/error.log`).
 
 ---
 
@@ -193,7 +228,7 @@ server {
     proxy_set_header X-Forwarded-Proto $scheme;
 
     location / {
-        limit_req zone=api_limit burst=20 nodelay;   # tự bỏ qua cho websocket nhờ $limit_key rỗng
+        limit_req zone=api_limit burst=60 nodelay;   # websocket + static tự bỏ qua nhờ $limit_key rỗng
 
         # proxy_read_timeout không nhận biến và không đặt được trong if,
         # nên request websocket được đẩy sang named location @websocket (timeout dài).
@@ -302,7 +337,7 @@ server {
     # 1 location duy nhất cho cả domain - không giả định path /api cố định
     # (path socket của từng service không cố định, có thể /, /api, /sso/api...).
     location / {
-        limit_req zone=api_limit burst=20 nodelay;   # tự bỏ qua cho websocket nhờ \$limit_key rỗng
+        limit_req zone=api_limit burst=60 nodelay;   # websocket + static tự bỏ qua nhờ \$limit_key rỗng
 
         # Websocket -> @websocket (timeout 600s), REST giữ 60s.
         # Tự động theo header Upgrade, không cần flag hay path riêng cho từng domain.
