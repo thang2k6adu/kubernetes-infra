@@ -1,0 +1,12 @@
+apiVersion: v1
+data:
+  GATEWAY_URL: http://prod-katech-auth-gateway.katech-auth-gateway.svc.cluster.local:8080
+  NEXT_PUBLIC_SSO_CLIENT_ID: katech-storefront
+  NEXT_PUBLIC_SSO_POST_LOGOUT_URI: https://katech-storefront.kruzetech.dev
+  NEXT_PUBLIC_SSO_REDIRECT_URI: https://katech-storefront.kruzetech.dev/auth/callback
+  NEXT_PUBLIC_SSO_URL: https://katech-gateway.kruzetech.dev/sso
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: katech-storefront-config
+  namespace: katech-storefront
