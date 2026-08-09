@@ -39,8 +39,10 @@ securityContext:
 
 service:
   type: ClusterIP
-  port: 80
-  targetPort: 80
+  # Ảnh dùng nginx-unprivileged: chạy non-root nên phải listen 8080, không bind được :80.
+  # Chart lấy containerPort và ingress backend port từ service.port, nên để cả hai là 8080.
+  port: 8080
+  targetPort: 8080
   annotations: {}
 
 ingress:
@@ -65,7 +67,7 @@ resources:
 livenessProbe:
   httpGet:
     path: /
-    port: 80
+    port: 8080
   initialDelaySeconds: 60
   periodSeconds: 15
   timeoutSeconds: 5
@@ -74,7 +76,7 @@ livenessProbe:
 readinessProbe:
   httpGet:
     path: /
-    port: 80
+    port: 8080
   initialDelaySeconds: 20
   periodSeconds: 10
   timeoutSeconds: 5
