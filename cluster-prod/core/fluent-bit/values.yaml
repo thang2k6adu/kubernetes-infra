@@ -77,11 +77,25 @@ config:
         HTTP_Passwd ${ELASTIC_PASSWORD}
         
         Logstash_Format On
-        Retry_Limit False
         TLS On
         TLS.Verify Off
 
         Suppress_Type_Name On
+
+        # Key có dấu chấm bị ES hiểu là object lồng nhau. ECK operator log theo
+        # chuẩn ECS (service.version, service.type) nên đã chốt mapping `service`
+        # thành object, khiến `service` dạng string của app katech bị reject.
+        Replace_Dots On
+
+        # Chunk bị ES từ chối là hỏng vĩnh viễn; retry vô hạn (False) khiến nó kẹt
+        # trong buffer mãi, đầy Mem_Buf_Limit rồi chặn tail của mọi namespace.
+        Retry_Limit 5
+
+        # Buffer mặc định quá nhỏ để đọc response bulk khi có nhiều doc lỗi
+        # ("cannot increase buffer"), làm Fluent Bit không biết doc nào đã vào và
+        # gửi lại cả chunk -> log trùng lặp.
+        Buffer_Size 1M
+        Trace_Error On
   # outputs: |
   #   [OUTPUT]
   #       Name stdout
