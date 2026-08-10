@@ -9,6 +9,8 @@ data:
   DB_USERNAME: katech_notification
   EMAIL_SENDER: no-reply@katech.vn
   IAM_BASE_URL: http://prod-katech-auth-iam.katech-auth-iam.svc.cluster.local:8080
+  INVITE_ACCEPT_URL: https://katech-admin-ui.kruzetech.dev/invite/accept
+  INVITE_WORKSPACE_URL: https://katech-admin-ui.kruzetech.dev
   KATECH_AUTH_JWT_ISSUER: https://katech-gateway.kruzetech.dev/sso
   MAIL_PROVIDER: smtp
   MAIL_SMTP_HOST: prod-katech-mailhog.katech-mailhog.svc.cluster.local
