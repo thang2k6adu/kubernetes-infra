@@ -38,6 +38,12 @@ config:
         Mem_Buf_Limit 50MB
         Skip_Long_Lines On
 
+        # Không có DB thì offset chỉ nằm trong RAM: mỗi lần pod restart sẽ đọc
+        # lại từ cuối file, mất toàn bộ log sinh ra trong lúc restart.
+        # /var/log là hostPath do chart mount sẵn nên offset sống qua restart.
+        DB      /var/log/flb_kube.db
+        DB.Sync Normal
+
   # Parser cri built-in đặt application log vào field `message`, nhưng filter
   # kubernetes chỉ merge JSON từ field tên `log` (hardcode). Clone lại cri với
   # capture group đổi thành `log` để Merge_Log / K8S-Logging.Parser hoạt động.
@@ -58,6 +64,11 @@ config:
         Keep_Log Off
         K8S-Logging.Parser On
         K8S-Logging.Exclude On
+
+        # Mặc định 32k, không đủ đọc response metadata của pod có nhiều
+        # annotation ("cannot increase buffer: max=32000"), làm record mất hẳn
+        # phần kubernetes.* nên không lọc được theo namespace. 0 = không giới hạn.
+        Buffer_Size 0
 
     # Log không phải JSON (nginx, argocd...) không được merge nên vẫn giữ `log`.
     # Đổi lại thành `message` để trùng field cũ đang dùng trên Kibana.
