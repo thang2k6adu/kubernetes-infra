@@ -4,9 +4,9 @@ kind: Kustomization
 namespace: katech-notification
 
 resources:
-  - registry-secret.yaml
   - configmap.yaml
   - sealed-secret.yaml
+  - registry-secret.yaml
   - namespace.yaml
 
 # Chart vendor trong repo (cluster-*/charts) thay vì helm pull mỗi lần sync:

@@ -7,8 +7,15 @@ data:
   DB_NAME: katech_notification
   DB_PORT: "5432"
   DB_USERNAME: katech_notification
+  EMAIL_SENDER: no-reply@katech.vn
   IAM_BASE_URL: http://prod-katech-auth-iam.katech-auth-iam.svc.cluster.local:8080
   KATECH_AUTH_JWT_ISSUER: https://katech-gateway.kruzetech.dev/sso
+  MAIL_PROVIDER: smtp
+  MAIL_SMTP_HOST: prod-katech-mailhog.katech-mailhog.svc.cluster.local
+  MAIL_SMTP_PASSWORD: ""
+  MAIL_SMTP_PORT: "1025"
+  MAIL_SMTP_STARTTLS: "false"
+  MAIL_SMTP_USERNAME: ""
   RABBITMQ_HOST: 103.172.237.33
   RABBITMQ_PORT: "5672"
   RABBITMQ_USERNAME: invoices
