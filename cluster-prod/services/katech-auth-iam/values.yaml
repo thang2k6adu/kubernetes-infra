@@ -4,7 +4,7 @@ image:
   repository: registry.kruzetech.dev/katech-auth-iam
   # tag 'dev' là mutable -> phải Always, không thì redeploy không kéo image mới
   pullPolicy: Always
-  tag: "dev"
+  tag: "git-e2d287cdcb02d7ca5b5cd859c3bdb581f56a5e18"
 
 imagePullSecrets:
   - name: katech-registry

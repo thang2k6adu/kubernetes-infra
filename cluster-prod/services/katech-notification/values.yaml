@@ -4,7 +4,7 @@ image:
   repository: registry.kruzetech.dev/katech-notification
   # tag 'dev' là mutable -> phải Always, không thì redeploy không kéo image mới
   pullPolicy: Always
-  tag: "dev"
+  tag: "git-d7f6b46cef00a5e6dbd61c6a9b1634a7fdbcdfaa"
 
 imagePullSecrets:
   - name: katech-registry
