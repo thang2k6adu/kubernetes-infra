@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/katech-payment:git-9dfcdb0412ba9ee64c9f7faf957dc8deb56c0ae3
+  - registry.kruzetech.dev/katech-payment:git-b1ba11871fc49ef65249acbdb516cc5118d30e89
