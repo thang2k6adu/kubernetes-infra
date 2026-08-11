@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/katech-notification:git-efc55644e03274614574fc3796b963adb7aeade4
+  - registry.kruzetech.dev/katech-notification:git-b1ba11871fc49ef65249acbdb516cc5118d30e89
