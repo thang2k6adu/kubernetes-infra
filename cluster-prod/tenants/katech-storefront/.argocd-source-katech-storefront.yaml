@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/katech-storefront:git-b1ba11871fc49ef65249acbdb516cc5118d30e89
+  - registry.kruzetech.dev/katech-storefront:git-6a216f40bf80c83c869393740fd11bf21f7748de
