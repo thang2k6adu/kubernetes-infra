@@ -10,3 +10,5 @@ data:
       api_url: https://registry.kruzetech.dev
       credentials: secret:argocd/katech-registry-creds#creds
       credsexpire: 10h
+  git.user: "thang2k6adu"
+  git.email: "thang2k6adu@gmail.com"
