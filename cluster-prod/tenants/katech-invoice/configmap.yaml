@@ -5,6 +5,7 @@ data:
   AUTH_SERVER_URL: http://prod-katech-auth-sso.katech-auth-sso.svc.cluster.local:8080
   BKAV_BASE_URL: https://wsdemo.ehoadon.vn
   BKAV_PARTNER_GUID: cd2b1c27-a7bd-469b-b02b-3e9075c01ee7
+  BKAV_PORTAL_BASE_URL: https://demo.ehoadon.vn
   DB_HOST: prod-katech-db.katech-db.svc.cluster.local
   DB_NAME: katech_invoice
   DB_PORT: "5432"
