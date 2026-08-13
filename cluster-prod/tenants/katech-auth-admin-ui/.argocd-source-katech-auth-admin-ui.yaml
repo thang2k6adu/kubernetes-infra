@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/katech-auth-admin-ui:git-efb9da829bc52061a75a17a8d534fff37f130c43
+  - registry.kruzetech.dev/katech-auth-admin-ui:git-4284885bd0d5ce138a51b6b55728f36f0cdc3f1f
