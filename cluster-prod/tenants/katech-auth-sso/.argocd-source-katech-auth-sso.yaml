@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/katech-auth-sso:git-fabb0083276e82524d5010f508c9e10a99279fd2
+  - registry.kruzetech.dev/katech-auth-sso:git-f8488d8dc7a3f726ddc680ffc43c3b23393c0344
