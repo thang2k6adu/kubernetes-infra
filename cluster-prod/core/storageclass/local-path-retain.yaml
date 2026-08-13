@@ -2,6 +2,11 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: local-path-retain
+  annotations:
+    # Without this, rancher.io/local-path falls back to hostPath-typed PVs, which the
+    # kubelet volume-stats collector skips entirely — those PVCs never show up in the
+    # Grafana "Persistent Volumes" dashboard (or any kubelet_volume_stats_* query).
+    defaultVolumeType: local
 provisioner: rancher.io/local-path
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Retain
