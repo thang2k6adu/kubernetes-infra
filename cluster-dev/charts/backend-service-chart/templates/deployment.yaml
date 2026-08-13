@@ -4,6 +4,12 @@ metadata:
   name: {{ include "backend-service-chart.fullname" . }}
   labels:
     {{- include "backend-service-chart.labels" . | nindent 4 }}
+  annotations:
+    # Reloader (cluster-*/core/reloader) theo dõi mọi ConfigMap/Secret mà envFrom bên dưới tham
+    # chiếu, tự rolling-restart khi nội dung đổi — bù cho việc ConfigMap ở đây là resource
+    # Kustomize riêng theo từng tenant (không nằm trong chart) nên Helm không tự hash được để dùng
+    # pattern checksum/config thông thường.
+    reloader.stakater.com/auto: "true"
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
