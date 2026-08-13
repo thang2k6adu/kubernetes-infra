@@ -16,7 +16,7 @@ data:
   REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
   REDIS_PORT: "6379"
   SPRING_PROFILES_ACTIVE: prod
-  VNPAY_ALLOWED_FRONTEND_RETURN_URLS: https://katech-storefront.kruzetech.dev,http://localhost:3000
+  VNPAY_ALLOWED_FRONTEND_RETURN_URLS: https://katech-storefront.kruzetech.dev,https://katech-admin-ui.kruzetech.dev,http://localhost:3000
   VNPAY_FRONTEND_RETURN_URL: https://katech-storefront.kruzetech.dev/
   VNPAY_IPN_ENABLED: "true"
   VNPAY_IPN_FALLBACK_ENABLED: "true"
