@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/katech-entitlement:git-431b1ff588794146d993c4a6dc05f5caf3795a64
+  - registry.kruzetech.dev/katech-entitlement:git-297e4639eead2ee93cfe513cfe4d40d2459918bc
