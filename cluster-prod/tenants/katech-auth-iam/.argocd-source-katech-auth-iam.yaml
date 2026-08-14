@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/katech-auth-iam:git-835eb31ffd006e1f86cbb460826d14e79991e4df
+  - registry.kruzetech.dev/katech-auth-iam:git-baa9da575c64bebe842cbc8f36d0a6707edbc19c
