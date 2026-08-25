@@ -1,3 +1,0 @@
-kustomize:
-  images:
-  - registry.kruzetech.dev/katech-storefront:git-e2f6d483951330bfe52c04a4a23c2996300626ec
