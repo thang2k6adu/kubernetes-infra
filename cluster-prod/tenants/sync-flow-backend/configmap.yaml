@@ -29,5 +29,5 @@ data:
   STORAGE_PROVIDER: local
 kind: ConfigMap
 metadata:
-  name: pp191225-api-config
-  namespace: pp191225-api
+  name: sync-flow-backend-config
+  namespace: sync-flow-backend

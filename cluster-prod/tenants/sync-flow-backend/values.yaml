@@ -1,19 +1,19 @@
-# Helm values for pp191225-api
+# Helm values for sync-flow-backend
 # Generated from service.yaml configuration
 
 image:
-  repository: ghcr.io/thang2k6adu/pp191225-be/be
+  repository: ghcr.io/thang2k6adu/sync-flow-backend/kruzetech-gateway
   pullPolicy: Always
-  tag: "91776ad92b4761c49707ecfc81efb42e196e6528"
+  tag: "sha-64a31af"
 
 # err is for vs code lint, ignore it
 imagePullSecrets:
   []
 
-nameOverride: "pp191225-api"
+nameOverride: "sync-flow-backend"
 fullnameOverride: ""
 
-replicaCount: 2
+replicaCount: 1
 
 strategy:
   type: RollingUpdate
@@ -57,7 +57,7 @@ ingress:
   className: "nginx"
   annotations: {}
   hosts:
-    - host: pp191225api.kruzetech.dev
+    - host: syncflow.kruzetech.dev
       paths:
         - path: /
           pathType: Prefix
@@ -65,10 +65,10 @@ ingress:
 resources:
   requests:
     cpu: "200m"
-    memory: "256Mi"
-  limits:
-    cpu: "1000m"
     memory: "512Mi"
+  limits:
+    cpu: "500m"
+    memory: "1024Mi"
 
 livenessProbe:
   httpGet:
@@ -109,9 +109,9 @@ autoscaling:
 
 envFrom:
   - configMapRef:
-      name: pp191225-api-config
+      name: sync-flow-backend-config
   - secretRef:
-      name: pp191225-api-secret
+      name: sync-flow-backend-secret
 
 configMap:
   enabled: false
@@ -159,7 +159,7 @@ affinity:
               - key: app.kubernetes.io/name
                 operator: In
                 values:
-                  - pp191225-api
+                  - sync-flow-backend
           topologyKey: kubernetes.io/hostname
 
 serviceMonitor:
