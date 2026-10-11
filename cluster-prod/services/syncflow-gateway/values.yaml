@@ -56,7 +56,7 @@ ingress:
   className: "nginx"
   annotations: {}
   hosts:
-    - host: syncflow.kruzetech.dev
+    - host: syncflow-gateway.kruzetech.dev
       paths:
         - path: /
           pathType: Prefix
