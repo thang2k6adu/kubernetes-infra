@@ -4,9 +4,10 @@ kind: Kustomization
 namespace: syncflow-db
 
 resources:
+  - namespace.yaml
   - configmap.yaml
   - sealed-secret.yaml
-  - namespace.yaml
+  - room-db-job.yaml
 
 helmCharts:
   - name: postgresql

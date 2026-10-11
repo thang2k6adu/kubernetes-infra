@@ -1,0 +1,66 @@
+# Tạo role + database kruzetech_room trên Postgres ĐÃ CHẠY sẵn.
+# Script initdb của Postgres chỉ chạy lúc khởi tạo volume lần đầu, nên DB thêm sau đó (room) phải tạo bằng Job này.
+# Chạy sau mỗi lần ArgoCD sync (PostSync), idempotent: chạy lại không lỗi và cũng cập nhật mật khẩu role theo secret.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: syncflow-room-db-init
+  namespace: syncflow-db
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  backoffLimit: 6
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: OnFailure
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 70
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: psql
+          image: postgres:16-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+          env:
+            - name: PGHOST
+              value: prod-syncflow-db
+            - name: PGUSER
+              value: postgres
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: syncflow-db-secret
+                  key: POSTGRES_PASSWORD
+            - name: ROOM_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: syncflow-db-secret
+                  key: KRUZETECH_ROOM_DB_PASSWORD
+          command: ["sh", "-c"]
+          args:
+            - |
+              until pg_isready -q; do echo "waiting for postgres"; sleep 2; done
+              psql -v ON_ERROR_STOP=1 -v pw="$ROOM_DB_PASSWORD" <<'SQL'
+              SELECT format('CREATE ROLE kruzetech_room LOGIN PASSWORD %L', :'pw')
+               WHERE NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'kruzetech_room')\gexec
+              SELECT format('ALTER ROLE kruzetech_room LOGIN PASSWORD %L', :'pw')\gexec
+              SELECT 'CREATE DATABASE kruzetech_room OWNER kruzetech_room'
+               WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'kruzetech_room')\gexec
+              GRANT ALL PRIVILEGES ON DATABASE kruzetech_room TO kruzetech_room;
+              REVOKE CONNECT ON DATABASE kruzetech_room FROM PUBLIC;
+              SQL
+              echo "kruzetech_room ready"
