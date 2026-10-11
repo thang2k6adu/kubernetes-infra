@@ -1,0 +1,128 @@
+# Helm values cho syncflow-gateway (chart backend-service-chart) - cấu hình devtest, tài nguyên tối thiểu
+
+image:
+  repository: registry.kruzetech.dev/kruzetech-gateway
+  pullPolicy: IfNotPresent
+  # Tag git-<sha 40 hex> do CI đẩy lên Nexus; argocd-image-updater sẽ tự ghi đè giá trị này.
+  tag: "git-9037d8d53785e03e7262af01257888b1adc011dd"
+
+imagePullSecrets:
+  - name: katech-registry
+
+nameOverride: "syncflow-gateway"
+fullnameOverride: ""
+
+replicaCount: 1
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 8080
+  targetPort: 8080
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: syncflow.kruzetech.dev
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Devtest: heap JVM bị cap theo limit bằng JAVA_TOOL_OPTIONS (trong configmap), CPU request thấp.
+resources:
+  requests:
+    cpu: "50m"
+    memory: "192Mi"
+  limits:
+    cpu: "500m"
+    memory: "384Mi"
+
+# Chart không render startupProbe -> dùng initialDelaySeconds: JVM với CPU request thấp mất 1-2 phút để lên.
+livenessProbe:
+  httpGet:
+    path: /actuator/health
+    port: 8080
+  initialDelaySeconds: 120
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+envFrom:
+  - configMapRef:
+      name: syncflow-gateway-config
+
+configMap:
+  enabled: false
+  data: {}
+
+secrets:
+  enabled: false
+  data: {}
+
+# readOnlyRootFilesystem: true nên JVM cần /tmp ghi được (Tomcat temp dir).
+volumes:
+  - name: tmp
+    emptyDir: {}
+
+volumeMounts:
+  - name: tmp
+    mountPath: /tmp
+
+persistence:
+  enabled: false
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+httpRoute:
+  enabled: false
