@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: syncflow-rabbitmq
+
+resources:
+  - configmap.yaml
+  - sealed-secret.yaml
+  - namespace.yaml
+
+helmCharts:
+  - name: rabbitmq
+    repo: https://charts.bitnami.com/bitnami
+    version: 16.0.14
+    releaseName: prod
+    namespace: syncflow-rabbitmq
+    valuesFile: values.yaml

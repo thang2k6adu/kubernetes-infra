@@ -1,0 +1,50 @@
+# RabbitMQ devtest cho syncflow (chart bitnami/rabbitmq): 1 node, không cluster, tài nguyên tối thiểu.
+# Hiện chưa service nào dùng; endpoint nội bộ: prod-syncflow-rabbitmq.syncflow-rabbitmq.svc.cluster.local:5672
+
+# bitnami/rabbitmq đã bị gỡ khỏi Docker Hub (404) -> dùng bản lưu ở bitnamilegacy, ghim đúng tag của chart.
+# Chart Bitnami từ chối image khác mặc định nếu không bật allowInsecureImages.
+# ApplicationSet đọc image.repository từ file này.
+global:
+  security:
+    allowInsecureImages: true
+
+image:
+  registry: docker.io
+  repository: bitnamilegacy/rabbitmq
+  tag: 4.1.3-debian-12-r1
+  pullPolicy: IfNotPresent
+
+nameOverride: "syncflow-rabbitmq"
+
+auth:
+  username: syncflow
+  # Secret chứa 2 key: rabbitmq-password, rabbitmq-erlang-cookie
+  existingPasswordSecret: "syncflow-rabbitmq-secret"
+  existingErlangSecret: "syncflow-rabbitmq-secret"
+
+replicaCount: 1
+
+resourcesPreset: "none"
+resources:
+  requests:
+    cpu: 50m
+    memory: 192Mi
+  limits:
+    cpu: 500m
+    memory: 384Mi
+
+persistence:
+  enabled: true
+  storageClass: "local-path-retain"
+  accessModes:
+    - ReadWriteOnce
+  size: 1Gi
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: false
+
+metrics:
+  enabled: false
