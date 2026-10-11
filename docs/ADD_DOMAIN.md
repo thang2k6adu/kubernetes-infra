@@ -227,6 +227,11 @@ server {
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
 
+    # Mặc định nginx chỉ cho body 1m -> upload lớn bị 413 ngay tại đây, không tới được cluster.
+    # 50m khớp proxy-body-size của ingress-nginx. Domain upload lớn (Docker registry...): xem mục
+    # "Domain nhận upload lớn" bên dưới.
+    client_max_body_size 50m;
+
     location / {
         limit_req zone=api_limit burst=60 nodelay;   # websocket + static tự bỏ qua nhờ $limit_key rỗng
 
@@ -339,6 +344,11 @@ server {
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto \$scheme;
 
+    # Mặc định nginx chỉ cho body 1m -> upload lớn bị 413 ngay tại đây, không tới được cluster.
+    # 50m khớp proxy-body-size của ingress-nginx. Domain upload lớn (Docker registry...): xem mục
+    # "Domain nhận upload lớn" bên dưới.
+    client_max_body_size 50m;
+
     # 1 location duy nhất cho cả domain - không giả định path /api cố định
     # (path socket của từng service không cố định, có thể /, /api, /sso/api...).
     location / {
@@ -386,6 +396,29 @@ sudo add-domain katech-admin-ui.kruzetech.dev cluster-prod
 - Phải làm xong các bước 2 đến 6 ở trên (nhất là `backends/<cluster>.conf` và `conf.d/ingress_upstream.conf`) trước khi chạy `add-domain`. Thiếu thì `nginx -t` fail với `host not found in upstream`; script sẽ tự gỡ site vừa tạo.
 - Mỗi domain có 1 cert riêng (`/etc/letsencrypt/live/<domain>`). Nếu trước đó đã có 1 cert gộp nhiều domain trùng tên domain đầu tiên, `certbot delete --cert-name <tên>` trước, nếu không certbot sẽ tạo `<tên>-0001`.
 - Domain phải trỏ DNS về IP public của VPS và port 80 mở trên firewall của cloud thì certbot mới cấp được cert.
+- Config mặc định cho body tối đa `50m` (`client_max_body_size`). Domain cần upload lớn hơn thì sửa tay theo mục bên dưới.
+
+### Domain nhận upload lớn (Docker registry / Nexus)
+
+Layer image thường vài chục đến vài trăm MB. Nếu để `50m` thì `docker push` bị `413 Request Entity Too Large` (trang HTML của nginx, layer nhỏ lên được, layer lớn Retrying rồi lỗi). Với domain registry (vd `registry.kruzetech.dev`), sau khi chạy `add-domain`, sửa tay file `/etc/nginx/sites-available/<domain>`:
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name registry.kruzetech.dev;
+    ...
+    client_max_body_size 0;          # bỏ giới hạn body (ghi đè 50m)
+    proxy_request_buffering off;     # đẩy thẳng layer lên cluster, không ghi tạm ra đĩa nginx
+
+    location / {
+        proxy_read_timeout 900s;     # thay cho 60s: layer lớn đẩy lâu hơn 1 phút
+        proxy_send_timeout 900s;
+        ...
+    }
+}
+```
+
+Rồi `sudo nginx -t && sudo nginx -s reload`. Lớp ingress-nginx trong cluster đã để `proxy-body-size: "0"` cho Nexus (xem `cluster-prod/tenants/katech-nexus/values.yaml`), nên chỉ cần sửa ở nginx ngoài.
 
 ---
 
