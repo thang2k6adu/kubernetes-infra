@@ -5,6 +5,9 @@ data:
   JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
     -Xss512k
   PORT: "8080"
+  ROOM_SERVICE_URL: http://prod-syncflow-room.syncflow-room.svc.cluster.local:3030
+  ROOM_SOCKET_URL: http://prod-syncflow-room-socketio.syncflow-room.svc.cluster.local:3031
+  ROOM_SOCKET_WS_URL: ws://prod-syncflow-room-socketio.syncflow-room.svc.cluster.local:3031
   TASK_SERVICE_URL: http://prod-syncflow-task.syncflow-task.svc.cluster.local:3010
   VOCAB_SERVICE_URL: http://prod-syncflow-vocab.syncflow-vocab.svc.cluster.local:3020
 kind: ConfigMap
