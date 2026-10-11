@@ -1,0 +1,115 @@
+# Postgres devtest cho syncflow (chart bitnami/postgresql, chỉ khai phần khác mặc định).
+# Mỗi service 1 database + 1 role riêng, tạo ở lần khởi tạo volume đầu tiên (primary.initdb).
+
+global:
+  postgresql:
+    auth:
+      existingSecret: "syncflow-db-secret"
+      secretKeys:
+        adminPasswordKey: "POSTGRES_PASSWORD"
+        userPasswordKey: "PASSWORD"
+        replicationPasswordKey: "REPLICATION_PASSWORD"
+        metricsPasswordKey: "METRICS_PASSWORD"
+
+# Giống katech-db: ApplicationSet đọc image.repository từ file này.
+image:
+  registry: docker.io
+  repository: bitnami/postgresql
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: "syncflow-db"
+
+architecture: standalone
+
+auth:
+  existingSecret: "syncflow-db-secret"
+  secretKeys:
+    adminPasswordKey: "POSTGRES_PASSWORD"
+    userPasswordKey: "PASSWORD"
+    replicationPasswordKey: "REPLICATION_PASSWORD"
+    metricsPasswordKey: "METRICS_PASSWORD"
+
+primary:
+  # Devtest: 1 instance nhỏ, đủ cho 3 DB nhẹ.
+  resourcesPreset: "none"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+
+  persistence:
+    enabled: true
+    storageClass: "local-path-retain"
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+
+  # Mật khẩu từng DB đến từ secret này (biến môi trường của container), script initdb đọc từ đó.
+  extraEnvVarsSecret: "syncflow-db-secret"
+
+  initdb:
+    scripts:
+      00-syncflow-init-databases.sh: |
+        # Tạo role + database cho từng service. Bitnami source file này nên KHÔNG được `exit`
+        # hay để `set -e` rò ra shell cha: toàn bộ thân nằm trong subshell-function.
+        syncflow_init_databases() (
+          set -eu
+
+          syncflow_run_sql() {
+            if command -v postgresql_execute >/dev/null 2>&1; then
+              postgresql_execute "postgres" "postgres" "${POSTGRES_POSTGRES_PASSWORD:-${POSTGRES_PASSWORD:-}}"
+            else
+              PGPASSWORD="${POSTGRES_POSTGRES_PASSWORD:-${POSTGRES_PASSWORD:-}}" \
+                psql --username postgres --dbname postgres --no-password -v ON_ERROR_STOP=1
+            fi
+          }
+
+          # role|database|biến chứa mật khẩu (đến từ primary.extraEnvVarsSecret)
+          for entry in \
+            "kruzetech_auth|kruzetech_auth|KRUZETECH_AUTH_DB_PASSWORD" \
+            "kruzetech_task|kruzetech_task|KRUZETECH_TASK_DB_PASSWORD" \
+            "kruzetech_vocab|kruzetech_vocab|KRUZETECH_VOCAB_DB_PASSWORD" \
+          ; do
+            role="${entry%%|*}"
+            rest="${entry#*|}"
+            db="${rest%%|*}"
+            var="${rest##*|}"
+            eval "pass=\${$var:-}"
+
+            if [ -z "$pass" ]; then
+              echo "syncflow-init: THIẾU biến $var — bỏ qua $db" >&2
+              continue
+            fi
+
+            # Idempotent: chạy lại trên volume đã có dữ liệu cũng không lỗi.
+            syncflow_run_sql <<SQL
+        DO \$\$
+        BEGIN
+          IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = '${role}') THEN
+            CREATE ROLE ${role} LOGIN PASSWORD '${pass}';
+          ELSE
+            ALTER ROLE ${role} LOGIN PASSWORD '${pass}';
+          END IF;
+        END
+        \$\$;
+        SELECT 'CREATE DATABASE ${db} OWNER ${role}'
+         WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '${db}')\gexec
+        GRANT ALL PRIVILEGES ON DATABASE ${db} TO ${role};
+        -- PUBLIC mặc định được CONNECT mọi database; REVOKE để service này không đọc được DB service khác.
+        REVOKE CONNECT ON DATABASE ${db} FROM PUBLIC;
+        SQL
+            echo "syncflow-init: sẵn sàng ${db} (owner ${role})"
+          done
+        )
+
+        syncflow_init_databases
+
+metrics:
+  enabled: false
+
+backup:
+  enabled: false
