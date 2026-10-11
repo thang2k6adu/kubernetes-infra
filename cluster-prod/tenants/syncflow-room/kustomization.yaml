@@ -4,10 +4,10 @@ kind: Kustomization
 namespace: syncflow-room
 
 resources:
-  - namespace.yaml
   - configmap.yaml
   - sealed-secret.yaml
   - registry-secret.yaml
+  - namespace.yaml
   - socketio-service.yaml
 
 helmCharts:
