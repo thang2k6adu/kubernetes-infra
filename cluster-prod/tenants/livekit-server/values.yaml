@@ -9,7 +9,8 @@ envFrom: []
 
 image:
   repository: livekit/livekit-server
-  tag: "latest"  # Nên ghim version cụ thể, VD: "v1.6.0"
+  # Ghim đúng appVersion của chart 1.9.0 (không dùng latest: pod pull lại có thể nhảy version ngoài ý muốn)
+  tag: "v1.9.0"
   pullPolicy: IfNotPresent
   # Thêm imagePullSecrets nếu dùng private registry
   # pullSecrets:
@@ -17,7 +18,9 @@ image:
 
 imagePullSecrets: []
 
-terminationGracePeriodSeconds: 18000
+# Chart không có preStop; LiveKit nhận SIGTERM thì đợi hết người trong phòng mới thoát.
+# 18000s (5h) làm mỗi lần redeploy (strategy Recreate) có thể treo tới 5h -> devtest để 10 phút.
+terminationGracePeriodSeconds: 600
 
 # Configuration for livekit
 livekit:
@@ -32,8 +35,14 @@ livekit:
   key_file: "keys.yaml"
   rtc:
     tcp_port: 7881
+    # Topology: pod hostNetwork trên worker k3s-worker-51 (VPN 10.10.10.12). Client chỉ thấy IP public của VPS
+    # GCP 34.126.172.66; VPS DNAT UDP 50000-60000 (trừ 51820) về 10.10.10.12 (xem LIVEKIT_INFRA_NEW.md).
+    # -> ICE candidate phải quảng bá 34.126.172.66, nên ghim cứng bằng node_ip.
+    # use_external_ip PHẢI để false: nó hỏi STUN (stun.l.google.com) và nhận về IP egress của worker
+    # (IP nhà mạng/NAT của worker), KHÔNG phải IP của VPS -> client sẽ gửi media sai chỗ.
+    # Nếu đổi VPS/IP public: sửa node_ip ở ĐÂY và ở tenants/livekit-server/values.yaml (2 file giống hệt nhau).
     use_external_ip: false
-    node_ip: "13.212.50.46" 
+    node_ip: "34.126.172.66"
     port_range_start: 50000
     port_range_end: 60000
     # STUN free của google
@@ -48,7 +57,7 @@ livekit:
   
   # API keys - KHÔNG nên config trực tiếp ở đây
   # keys: {}
-    # devkey: "9f3c1a6b8d2e4f7a9c1d3e5f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"
+    # devkey: "<LIVEKIT_API_SECRET>"   # secret thật nằm trong SealedSecret livekit-server-secret (key keys.yaml), KHÔNG ghi vào repo
   
   turn:
     enabled: false
@@ -79,9 +88,11 @@ health:
   port: 8080
   path: "/health"
 
-# Ingress configuration
+# Chart livekit-server 1.9.0 KHÔNG đọc khối `ingress:` này (nó chỉ render Ingress khi loadBalancer.type != disable).
+# Domain livekit.kruzetech.dev đi qua nginx trên VPS -> 10.10.10.12:7880 (xem MODIFY_RESERVE_PROXY.md),
+# KHÔNG đi qua ingress-nginx trong cluster. Để enabled:false cho khỏi hiểu nhầm / lỡ bật là đụng nhau.
 ingress:
-  enabled: true
+  enabled: false
   className: ""
   annotations: {}
   hosts:
@@ -90,6 +101,15 @@ ingress:
         - path: /
           pathType: Prefix
 
+
+# Service của chart được điều khiển bằng khối loadBalancer (KHÔNG phải `service:`).
+# type: disable  -> Service ClusterIP, không NodePort/Ingress/LoadBalancer.
+# servicePort: 7880 -> room gọi admin API qua http://prod-livekit-server.livekit-server.svc.cluster.local:7880
+#   (mặc định chart là 80, khác với LIVEKIT_API_URL của syncflow-room nên phải đặt 7880).
+# Pod chạy hostNetwork nên 7880/7881 TCP và UDP 50000-60000 mở thẳng trên node; Service chỉ dùng cho traffic trong cluster.
+loadBalancer:
+  type: disable
+  servicePort: 7880
 
 # service:
 #   type: ClusterIP
@@ -126,7 +146,7 @@ nodeSelector:
 # LiveKit cần CPU nhiều hơn RAM
 resources:
   requests:
-    cpu: "500m"
+    cpu: "250m"
     memory: "256Mi"
   limits:
     cpu: "1000m"

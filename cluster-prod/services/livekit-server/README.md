@@ -3,13 +3,13 @@
 ## Cấu hình mạng
 ```yaml
 rtc:
-  use_external_ip: true
-  external_ip: "13.212.50.46"  # Phải sửa thành Public IP thật của server
+  use_external_ip: false
+  node_ip: "34.126.172.66"  # IP public của VPS GCP (client thấy IP này; VPS DNAT UDP về worker). KHÔNG dùng use_external_ip
 ```
 
 ## API Keys
 
-- Sửa `keys.yaml` trong file `.env` với format: `devkey: "9f3c1a6b8d2e4f7a9c1d3e5f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5"`
+- Sửa `keys.yaml` trong file `.env` với format: `devkey: "<LIVEKIT_API_SECRET>"`
 
 ## Redis và Replicas
 
