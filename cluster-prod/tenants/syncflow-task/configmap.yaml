@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  CORS_ORIGIN: '*'
+  DATABASE_URL: jdbc:postgresql://prod-syncflow-db.syncflow-db.svc.cluster.local:5432/kruzetech_task
+  DB_USERNAME: kruzetech_task
+  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+    -Xss512k
+  PORT: "3010"
+  SWAGGER_ENABLED: "true"
+kind: ConfigMap
+metadata:
+  name: syncflow-task-config
+  namespace: syncflow-task
