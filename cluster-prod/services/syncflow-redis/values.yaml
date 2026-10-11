@@ -1,0 +1,44 @@
+# Redis devtest cho syncflow (chart bitnami/redis, chỉ khai phần khác mặc định).
+# Dùng cho hàng đợi ghép trận của syncflow-room: dữ liệu tạm thời nên không cần lưu xuống đĩa.
+# Endpoint nội bộ: prod-syncflow-redis-master.syncflow-redis.svc.cluster.local:6379
+
+# Giống katech-redis: ApplicationSet đọc image.repository từ file này.
+image:
+  registry: docker.io
+  repository: bitnami/redis
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: "syncflow-redis"
+
+architecture: standalone
+
+auth:
+  enabled: true
+  existingSecret: "syncflow-redis-secret"
+  existingSecretPasswordKey: "REDIS_PASSWORD"
+
+# Hàng đợi/trạng thái ghép trận có TTL và tự dựng lại được, nên tắt ghi đĩa; chặn bộ nhớ để không vượt limit của pod.
+commonConfiguration: |-
+  appendonly no
+  save ""
+  maxmemory 96mb
+  maxmemory-policy noeviction
+
+master:
+  resourcesPreset: "none"
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+  persistence:
+    enabled: false
+
+metrics:
+  enabled: false
+
+sentinel:
+  enabled: false
