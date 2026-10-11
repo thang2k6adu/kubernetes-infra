@@ -32,11 +32,13 @@ server 10.10.10.12:7880;
 sudo nano /etc/nginx/backends/cluster-prod-livekit.conf
 ```
 
-Paste nội dung:
+Paste nội dung (CHỈ 1 node chạy LiveKit, `nodeSelector: k3s-worker-51` = `10.10.10.12`):
 ```nginx
-server 10.10.10.11:7880;
 server 10.10.10.12:7880;
 ```
+
+> Không khai node không chạy LiveKit (vd `10.10.10.11`): nginx vẫn chọc sang, bị từ chối rồi mới
+> chuyển node khác, request đầu bị chậm. Khi nào chạy DaemonSet/nhiều replica thì mới khai thêm node.
 
 ## Bước 3.1: Cấu hình upstream
 ```bash
