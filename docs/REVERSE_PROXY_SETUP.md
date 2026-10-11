@@ -204,10 +204,18 @@ BEGIN {
 
 /^\[/ {
     print
+    section=""
     next
 }
 
 NF > 0 {
+    # Chỉ sửa dòng trong [master] và [workers]; các section khác (vd [vps]) giữ nguyên,
+    # nếu không vpn_ip và wg_public_key của VPS sẽ bị xóa mất.
+    if (section != "master" && section != "workers") {
+        print
+        next
+    }
+
     ip = $1
     line = $0
 
@@ -278,8 +286,13 @@ nano ~/k3s-inventory/hosts.ini
 
 ```ini
 [vps]
-18.143.115.106 ansible_user=ubuntu vpn_ip=10.10.10.1 wg_public_key=Q/avQ4fi7Dd21Dh0Ex/Rwp/YjIMfgs2Q7sxRv94DRFE=
+<IP_PUBLIC_VPS> ansible_user=thang2k6adu vpn_ip=10.10.10.1 wg_public_key=<PUBLIC_KEY_VPS>
 ```
+
+**Lưu ý:**
+- `ansible_user` là user SSH thật của VPS (hiện tại là `thang2k6adu`, không phải `ubuntu`).
+- Playbook ở 1.7 chỉ đọc `wg_public_key` và IP của VPS từ inventory, không SSH vào VPS. Master chưa có key vào VPS nên `ansible ... -m ping` tới VPS sẽ báo `UNREACHABLE`, bình thường, bỏ qua.
+- `gen-keys.yml` dùng `hosts: all` nên cũng sẽ báo `unreachable=1` cho VPS, không ảnh hưởng. Muốn sạch thì chạy với `--limit master:workers`.
 
 ---
 
@@ -339,7 +352,7 @@ sudo cat /etc/wireguard/wg0.conf
 ```ini
 [Interface]
 Address = 10.10.10.11/24
-PrivateKey = 2MpNSUhR6Hb5VOPmwJPR4IE3M0FxB3Ib1QEARoJNnHY=
+PrivateKey = <PRIVATE_KEY_CUA_NODE>
 
 [Peer]
 PublicKey = JKL1bfmnfZfoS/QyQKIVW5mgENgNh4CyhlYi2ObqVUs=
@@ -466,7 +479,7 @@ sudo nano /etc/wireguard/wg0.conf
 [Interface]
 Address = 10.10.10.1/24, 10.10.20.1/24  # thêm cluster mới
 ListenPort = 51820
-PrivateKey = +CB2hgASvIul0UBtGsBbgRxQxPB1Ton/qHE4TMUZt04=
+PrivateKey = <PRIVATE_KEY_VPS>
 
 [Peer]
 PublicKey = 7GPiM+Ju79MBDVJJvL5uGHAJM71VTtZsGq2pQZlC4iQ=
@@ -501,6 +514,15 @@ sudo sysctl -p
 
 ### 1.10.1. Forward SSH (BONUS)
 
+Master nằm sau router nhà nên không SSH thẳng từ internet được. Cách duy nhất trong tài liệu này là
+DNAT trên VPS: ai gọi `VPS:8022` thì VPS chuyển gói tin sang `10.10.10.11:8022` (master) qua WireGuard.
+Không dùng reverse SSH tunnel (`ssh -R`) hay `GatewayPorts`.
+
+```bash
+ssh -p 8022 thang2k6adu@<IP_PUBLIC_VPS>   # vào master
+ssh thang2k6adu@<IP_PUBLIC_VPS>           # vào chính VPS (port 22)
+```
+
 ```bash
 # Destination nat, chuyển từ ip vps sang ip node
 sudo iptables -t nat -A PREROUTING \
@@ -524,7 +546,23 @@ sudo iptables -t nat -L -n -v --line-numbers
 sudo iptables -L FORWARD -n -v --line-numbers
 ```
 
-**Mở port (EC2 thì lên trang) (51820 UDP)**
+**Lưu rule để không mất khi reboot:**
+
+```bash
+sudo apt install -y iptables-persistent
+sudo netfilter-persistent save
+```
+
+**Mở port trên firewall của cloud (AWS Security Group / GCP VPC firewall):**
+
+| Port | Giao thức | Dùng cho |
+|---|---|---|
+| 22 | TCP | SSH vào VPS |
+| 80, 443 | TCP | Nginx + certbot |
+| 8022 | TCP | SSH vào master (DNAT) |
+| 51820 | UDP | WireGuard |
+
+VPS không có ufw/iptables chặn, nên firewall của cloud là lớp bảo vệ duy nhất.
 
 ---
 

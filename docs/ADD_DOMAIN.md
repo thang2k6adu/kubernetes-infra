@@ -240,13 +240,13 @@ server {
 
         proxy_read_timeout 60s;
         proxy_send_timeout 60s;
-        proxy_pass http://ingress_prod;
+        proxy_pass http://cluster-prod;
     }
 
     location @websocket {
         proxy_read_timeout 600s;
         proxy_send_timeout 600s;
-        proxy_pass http://ingress_prod;
+        proxy_pass http://cluster-prod;
     }
 }
 ```
@@ -306,7 +306,12 @@ EOF
 
 ln -s $CONF /etc/nginx/sites-enabled/$DOMAIN
 
-nginx -t || exit 1
+# Lỗi thì gỡ site vừa tạo, không để lại config hỏng làm nginx -t fail về sau
+if ! nginx -t; then
+  rm -f /etc/nginx/sites-enabled/$DOMAIN $CONF
+  echo "nginx -t failed, removed $DOMAIN. Check upstream $UPSTREAM (conf.d/ingress_upstream.conf, backends/$UPSTREAM.conf)"
+  exit 1
+fi
 systemctl reload nginx
 
 certbot --nginx -d $DOMAIN --non-interactive --agree-tos -m admin@$DOMAIN
@@ -378,6 +383,9 @@ sudo add-domain katech-admin-ui.kruzetech.dev cluster-prod
 **Lưu ý:**
 - Script không tự thêm `www.<domain>` nữa — add domain nào thì chỉ domain đó hoạt động, không cần khai báo thêm gì. Domain gốc `kruzetech.dev` (nếu cần `www.kruzetech.dev` redirect) thì cấu hình tay riêng, không qua script này.
 - Không cần phân biệt domain có websocket hay không: config tự route request có header `Upgrade` sang `@websocket` (timeout 600s), còn REST giữ 60s. Domain nào cũng dùng chung 1 lệnh.
+- Phải làm xong các bước 2 đến 6 ở trên (nhất là `backends/<cluster>.conf` và `conf.d/ingress_upstream.conf`) trước khi chạy `add-domain`. Thiếu thì `nginx -t` fail với `host not found in upstream`; script sẽ tự gỡ site vừa tạo.
+- Mỗi domain có 1 cert riêng (`/etc/letsencrypt/live/<domain>`). Nếu trước đó đã có 1 cert gộp nhiều domain trùng tên domain đầu tiên, `certbot delete --cert-name <tên>` trước, nếu không certbot sẽ tạo `<tên>-0001`.
+- Domain phải trỏ DNS về IP public của VPS và port 80 mở trên firewall của cloud thì certbot mới cấp được cert.
 
 ---
 
@@ -387,6 +395,12 @@ sudo add-domain katech-admin-ui.kruzetech.dev cluster-prod
 # Nhớ thêm đúng file theo cluster (cluster-prod.conf hoặc cluster-dev.conf)
 echo "server 10.10.10.14:30080;" >> /etc/nginx/backends/cluster-prod.conf
 nginx -t && systemctl reload nginx
+```
+
+**Lưu ý:** ingress-nginx đang để `externalTrafficPolicy: Local`, nên node chỉ trả lời NodePort 30080/30443 khi có pod ingress-controller chạy trên chính node đó. Vì vậy controller chạy dạng `DaemonSet` (xem `cluster-*/core/nginx-ingress/values.yaml`): node mới join sẽ tự có pod. Nếu thêm node vào `backends/` mà node chưa có pod controller thì request trúng node đó sẽ timeout 10s rồi mới sang node khác. Kiểm tra trước khi thêm:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" -H "Host: <domain>" http://10.10.10.14:30080/   # phải ra 200/302/...
 ```
 
 ---
