@@ -23,6 +23,11 @@ terminationGracePeriodSeconds: 18000
 livekit:
   port: 7880
   log_level: info
+  # LiveKit báo người rời/phòng kết thúc về syncflow-room (xác thực bằng JWT ký bằng key bên dưới)
+  webhook:
+    api_key: devkey
+    urls:
+      - http://prod-syncflow-room.syncflow-room.svc.cluster.local:3030/api/livekit/webhook
   # bắt buộc phải có cái này
   key_file: "keys.yaml"
   rtc:
