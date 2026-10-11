@@ -1,0 +1,20 @@
+# Service riêng cho server socket.io (Netty) của syncflow-room. Gateway trỏ route /socket.io/** vào đây.
+# Chart backend-service-chart chỉ có một cổng (REST 3030) nên cổng 3031 khai ở manifest này.
+apiVersion: v1
+kind: Service
+metadata:
+  name: prod-syncflow-room-socketio
+  namespace: syncflow-room
+  labels:
+    app.kubernetes.io/name: syncflow-room
+    app.kubernetes.io/instance: prod
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: syncflow-room
+    app.kubernetes.io/instance: prod
+  ports:
+    - name: socketio
+      port: 3031
+      targetPort: 3031
+      protocol: TCP
