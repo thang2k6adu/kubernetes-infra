@@ -1,0 +1,16 @@
+apiVersion: v1
+data:
+  CACHE_TYPE: simple
+  CORS_ORIGIN: '*'
+  DATABASE_URL: jdbc:postgresql://prod-syncflow-db.syncflow-db.svc.cluster.local:5432/kruzetech_auth
+  DB_USERNAME: kruzetech_auth
+  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+    -Xss512k
+  JWT_EXPIRES_IN: 2h
+  JWT_REFRESH_EXPIRES_IN: 7d
+  PORT: "3000"
+  SWAGGER_ENABLED: "true"
+kind: ConfigMap
+metadata:
+  name: syncflow-auth-config
+  namespace: syncflow-auth
