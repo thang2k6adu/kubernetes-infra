@@ -4,6 +4,7 @@ data:
   CORS_ORIGIN: '*'
   DATABASE_URL: jdbc:postgresql://prod-syncflow-db.syncflow-db.svc.cluster.local:5432/kruzetech_auth
   DB_USERNAME: kruzetech_auth
+  EVENTS_STORE: none
   FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@pp191225-40959.iam.gserviceaccount.com
   FIREBASE_PROJECT_ID: pp191225-40959
   JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
@@ -14,5 +15,6 @@ data:
   SWAGGER_ENABLED: "true"
 kind: ConfigMap
 metadata:
+  creationTimestamp: null
   name: syncflow-auth-config
   namespace: syncflow-auth
