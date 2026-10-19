@@ -1,0 +1,123 @@
+# Helm values cho syncflow-web-admin (chart backend-service-chart) - SPA React tĩnh, serve bằng nginx-unprivileged
+
+image:
+  repository: registry.kruzetech.dev/syncflow-web-admin
+  pullPolicy: IfNotPresent
+  # Tag git-<sha 40 hex> do CI đẩy lên Nexus; argocd-image-updater sẽ tự ghi đè giá trị này.
+  # Lần đầu: thay bằng tag của lần CI đầu tiên chạy xanh trên repo Sync_Flow_Web-Admin.
+  tag: "git-2f274c87e36e6fb1e40ffb1e8f4e82bf3834bdb4"
+
+imagePullSecrets:
+  - name: katech-registry
+
+nameOverride: "syncflow-web-admin"
+fullnameOverride: ""
+
+replicaCount: 1
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 101
+  fsGroup: 101
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  # nginx cần ghi pid + cache tạm vào /tmp, /var/cache/nginx.
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  # Ảnh dùng nginx-unprivileged: chạy non-root nên phải listen 8080, không bind được :80.
+  # Chart lấy containerPort và ingress backend port từ service.port, nên để cả hai là 8080.
+  port: 8080
+  targetPort: 8080
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: admin-portal.kruzetech.dev
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  requests:
+    cpu: "20m"
+    memory: "32Mi"
+  limits:
+    cpu: "200m"
+    memory: "128Mi"
+
+# Đường health lấy đúng từ HEALTHCHECK trong Dockerfile của Web-Admin.
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+envFrom:
+  - configMapRef:
+      name: syncflow-web-admin-config
+
+configMap:
+  enabled: false
+  data: {}
+
+secrets:
+  enabled: false
+  data: {}
+
+volumes: []
+volumeMounts: []
+
+persistence:
+  enabled: false
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+httpRoute:
+  enabled: false
