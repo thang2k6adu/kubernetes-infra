@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - registry.kruzetech.dev/syncflow-teacher-studio:git-e8fa2591fc8d9dba5b4eaaf9abbd53040ffff6ae
