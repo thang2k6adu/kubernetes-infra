@@ -4,15 +4,20 @@ data:
   CORS_ORIGIN: '*'
   DATABASE_URL: jdbc:postgresql://prod-syncflow-db.syncflow-db.svc.cluster.local:5432/kruzetech_auth
   DB_USERNAME: kruzetech_auth
-  EVENTS_STORE: none
+  EVENTS_STORE: redis
   FIREBASE_CLIENT_EMAIL: firebase-adminsdk-fbsvc@pp191225-40959.iam.gserviceaccount.com
   FIREBASE_PROJECT_ID: pp191225-40959
   JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
     -Xss512k
   JWT_EXPIRES_IN: 2h
   JWT_REFRESH_EXPIRES_IN: 7d
+  PAYMENT_ORDER_TTL: 24h
   PORT: "3000"
   SWAGGER_ENABLED: "true"
+  VIETQR_ACCOUNT_NAME: TONG QUANG VIET
+  VIETQR_ACCOUNT_NO: "19074369792010"
+  VIETQR_BANK_BIN: "970407"
+  VIETQR_TEMPLATE: compact2
 kind: ConfigMap
 metadata:
   creationTimestamp: null
