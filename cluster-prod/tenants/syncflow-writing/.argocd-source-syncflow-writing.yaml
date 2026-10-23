@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - registry.kruzetech.dev/kruzetech-writing:git-2034bf0cb1ccdc77699d32a56725806c1f42566a
