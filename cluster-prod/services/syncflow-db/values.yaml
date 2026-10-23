@@ -74,6 +74,8 @@ primary:
             "kruzetech_task|kruzetech_task|KRUZETECH_TASK_DB_PASSWORD" \
             "kruzetech_vocab|kruzetech_vocab|KRUZETECH_VOCAB_DB_PASSWORD" \
             "kruzetech_room|kruzetech_room|KRUZETECH_ROOM_DB_PASSWORD" \
+            "kruzetech_reading|kruzetech_reading|KRUZETECH_READING_DB_PASSWORD" \
+            "kruzetech_writing|kruzetech_writing|KRUZETECH_WRITING_DB_PASSWORD" \
           ; do
             role="${entry%%|*}"
             rest="${entry#*|}"

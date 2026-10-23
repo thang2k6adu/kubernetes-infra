@@ -5,6 +5,8 @@ data:
   JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
     -Xss512k
   PORT: "8080"
+  READING_SERVICE_URL: http://prod-syncflow-reading.syncflow-reading.svc.cluster.local:3050
+  WRITING_SERVICE_URL: http://prod-syncflow-writing.syncflow-writing.svc.cluster.local:3060
   ROOM_SERVICE_URL: http://prod-syncflow-room.syncflow-room.svc.cluster.local:3030
   ROOM_SOCKET_URL: http://prod-syncflow-room-socketio.syncflow-room.svc.cluster.local:3031
   ROOM_SOCKET_WS_URL: ws://prod-syncflow-room-socketio.syncflow-room.svc.cluster.local:3031

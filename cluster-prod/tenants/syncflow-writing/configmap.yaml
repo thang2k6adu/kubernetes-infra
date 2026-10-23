@@ -1,0 +1,20 @@
+apiVersion: v1
+data:
+  CORS_ORIGIN: '*'
+  DATABASE_URL: jdbc:postgresql://prod-syncflow-db.syncflow-db.svc.cluster.local:5432/kruzetech_writing
+  DB_USERNAME: kruzetech_writing
+  EVENTS_STORE: redis
+  GEMINI_MODEL_FEEDBACK: gemini-flash-latest
+  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+    -Xss512k
+  PORT: "3060"
+  QUOTA_STORE: redis
+  REDIS_HOST: prod-syncflow-redis-master.syncflow-redis.svc.cluster.local
+  REDIS_PORT: "6379"
+  ROOM_SERVICE_URL: http://prod-syncflow-room.syncflow-room.svc.cluster.local:3030
+  SWAGGER_ENABLED: "true"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: syncflow-writing-config
+  namespace: syncflow-writing

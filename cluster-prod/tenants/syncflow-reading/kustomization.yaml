@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: syncflow-reading
+# sealed-secret.yaml và registry-secret.yaml sinh bằng scripts/seal-env.sh (cần secret thật) trước khi push.
+resources:
+  - configmap.yaml
+  - sealed-secret.yaml
+  - registry-secret.yaml
+  - namespace.yaml
+helmCharts:
+  - name: backend-service-chart
+    repo: https://thang2k6adu.github.io/backend-service-charts
+    version: 0.1.0
+    releaseName: prod
+    namespace: syncflow-reading
+    valuesFile: values.yaml
