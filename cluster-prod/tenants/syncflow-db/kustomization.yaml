@@ -10,6 +10,7 @@ resources:
   - room-db-job.yaml
   - reading-db-job.yaml
   - writing-db-job.yaml
+  - grammar-db-job.yaml
 
 helmCharts:
   - name: postgresql

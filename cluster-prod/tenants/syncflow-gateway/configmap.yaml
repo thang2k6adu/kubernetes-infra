@@ -2,6 +2,7 @@ apiVersion: v1
 data:
   AUTH_SERVICE_URL: http://prod-syncflow-auth.syncflow-auth.svc.cluster.local:3000
   CORS_ORIGIN: '*'
+  GRAMMAR_SERVICE_URL: http://prod-syncflow-grammar.syncflow-grammar.svc.cluster.local:3070
   JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
     -Xss512k
   PORT: "8080"

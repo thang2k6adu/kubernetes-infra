@@ -76,6 +76,7 @@ primary:
             "kruzetech_room|kruzetech_room|KRUZETECH_ROOM_DB_PASSWORD" \
             "kruzetech_reading|kruzetech_reading|KRUZETECH_READING_DB_PASSWORD" \
             "kruzetech_writing|kruzetech_writing|KRUZETECH_WRITING_DB_PASSWORD" \
+            "kruzetech_grammar|kruzetech_grammar|KRUZETECH_GRAMMAR_DB_PASSWORD" \
           ; do
             role="${entry%%|*}"
             rest="${entry#*|}"
