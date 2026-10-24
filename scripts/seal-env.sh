@@ -7,6 +7,8 @@ ClusterName=""
 RootDir=""
 ProjectName=""
 VerboseOutput=false
+Merge=false
+Update=false
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -15,9 +17,16 @@ while [[ $# -gt 0 ]]; do
     --RootDir) RootDir="$2"; shift 2 ;;
     --ProjectName) ProjectName="$2"; shift 2 ;;
     --VerboseOutput) VerboseOutput=true; shift ;;
+    --Merge) Merge=true; shift ;;
+    --Update) Update=true; shift ;;
     *) echo "Unknown parameter: $1"; exit 1 ;;
   esac
 done
+
+if [[ "$Update" == true && "$Merge" != true ]]; then
+  echo "--Update chỉ dùng cùng --Merge."
+  exit 1
+fi
 
 scriptRoot="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 libPath="$scriptRoot/lib"
@@ -37,6 +46,62 @@ WriteSection() {
   echo "> $Text"
   printf '%.0s-' {1..60}
   echo ""
+}
+
+# Ghi configmap.yaml từ env-file. Mặc định ghi đè; với --Merge thì gộp vào file hiện có:
+# khóa chỉ có ở file cũ được giữ nguyên, khóa mới được thêm, khóa trùng giữ giá trị cũ
+# (--Update: lấy giá trị trong .env).
+WriteConfigMap() {
+  local envFile="$1" dest="$2" name="$3" ns="$4"
+
+  if [[ "$Merge" != true || ! -f "$dest" ]]; then
+    kubectl create configmap "$name" --from-env-file="$envFile" -n "$ns" \
+      --dry-run=client -o yaml > "$dest"
+    return
+  fi
+
+  local fresh="$dest.new" first second
+  kubectl create configmap "$name" --from-env-file="$envFile" -n "$ns" \
+    --dry-run=client -o yaml > "$fresh"
+
+  # Giá trị ở file đứng sau thắng.
+  if [[ "$Update" == true ]]; then first="$dest"; second="$fresh"; else first="$fresh"; second="$dest"; fi
+  # ConfigMap rỗng (không có khóa nào) thì bỏ hẳn trường data thay vì để "data: null".
+  yq eval-all '. as $i ireduce ({}; . * $i) | .data |= sort_keys(.) | with(select(.data == null); del(.data))' "$first" "$second" > "$dest.merged"
+  mv "$dest.merged" "$dest"
+  rm -f "$fresh"
+}
+
+# Gộp secret vào sealed-secret.yaml hiện có bằng kubeseal --raw: mã hóa từng giá trị rồi chèn vào
+# spec.encryptedData, nên không cần biết giá trị của các khóa đã có. Chỉ dùng được với scope strict.
+# Tham số: file, tên secret, namespace, rồi các cặp KEY=VALUE.
+MergeSealedSecret() {
+  local file="$1" secName="$2" ns="$3"; shift 3
+
+  local scoped
+  scoped=$(yq '(.metadata.annotations // {}) | keys | map(select(test("cluster-wide|namespace-wide"))) | length' "$file")
+  if [[ "$scoped" != "0" ]]; then
+    echo "  [!] $file dùng scope cluster-wide/namespace-wide, --Merge không hỗ trợ. Chạy không --Merge để seal lại toàn bộ."
+    return 1
+  fi
+  if [[ "$(yq '.metadata.name' "$file")" != "$secName" ]]; then
+    echo "  [!] Tên secret trong $file khác $secName, dừng để tránh trộn nhầm."
+    return 1
+  fi
+
+  local entry key value exists enc
+  for entry in "$@"; do
+    key="${entry%%=*}"
+    value="${entry#*=}"
+    exists=$(K="$key" yq '.spec.encryptedData | has(strenv(K))' "$file")
+    if [[ "$exists" == "true" && "$Update" != true ]]; then
+      echo "  [=] $key đã có, giữ nguyên"
+      continue
+    fi
+    enc=$(printf '%s' "$value" | kubeseal --raw --cert "$CertPath" --namespace "$ns" --name "$secName")
+    K="$key" V="$enc" yq -i '.spec.encryptedData[strenv(K)] = strenv(V)' "$file"
+    if [[ "$exists" == "true" ]]; then echo "  [~] $key cập nhật"; else echo "  [+] $key thêm mới"; fi
+  done
 }
 
 # Function to read directory structure from cluster-config.yaml
@@ -244,16 +309,15 @@ if [[ ! -f "$whitelistFile" ]]; then
   printf "%s\n" "${configData[@]}" > "$tenantDir/config.env"
   
   echo "Creating ConfigMap (${#configData[@]} variables)..."
-  kubectl create configmap "$configMapName" \
-    --from-env-file="$tenantDir/config.env" \
-    -n "$namespace" \
-    --dry-run=client \
-    -o yaml > "$tenantDir/configmap.yaml"
-  
+  WriteConfigMap "$tenantDir/config.env" "$tenantDir/configmap.yaml" "$configMapName" "$namespace"
+
   rm -f "$tenantDir/config.env"
 
   kustomizationExtras=()
-  if [[ -n "$registryUser" && -n "$registryPassword" ]]; then
+  if [[ "$Merge" == true && "$Update" != true && -f "$tenantDir/registry-secret.yaml" ]]; then
+    echo "  [=] registry-secret.yaml đã có, giữ nguyên"
+    kustomizationExtras+=(registry-secret.yaml)
+  elif [[ -n "$registryUser" && -n "$registryPassword" ]]; then
     echo "Sealing image pull secret..."
     kubectl create secret docker-registry katech-registry \
       --docker-server="${registryServer:-registry.kruzetech.dev}" \
@@ -342,11 +406,7 @@ printf "%s\n" "${configData[@]}" > config.env
 printf "%s\n" "${secretData[@]}" > secret.env
 
 echo "Creating ConfigMap..."
-kubectl create configmap "$configMapName" \
-  --from-env-file=config.env \
-  -n "$namespace" \
-  --dry-run=client \
-  -o yaml > configmap.yaml
+WriteConfigMap config.env configmap.yaml "$configMapName" "$namespace"
 
 echo "  [+] configmap.yaml created"
 
@@ -354,7 +414,15 @@ kustomizationExtras=()
 
 # kubeseal abort khi Secret rỗng, nên service không có secret riêng (FE, service
 # chỉ có config công khai) sẽ chết ở đây nếu không bọc điều kiện.
-if ((${#secretData[@]})); then
+if [[ "$Merge" == true && -f sealed-secret.yaml ]]; then
+  # Gộp vào sealed-secret hiện có, không đụng các khóa không nằm trong .env.
+  echo "Merging Secret vào sealed-secret.yaml hiện có..."
+  if ((${#secretData[@]})); then
+    MergeSealedSecret sealed-secret.yaml "$secretName" "$namespace" "${secretData[@]}"
+  fi
+  kustomizationExtras+=(sealed-secret.yaml)
+  echo "  [+] sealed-secret.yaml merged"
+elif ((${#secretData[@]})); then
   echo "Creating Secret..."
   kubectl create secret generic "$secretName" \
     --from-env-file=secret.env \
@@ -375,7 +443,10 @@ else
   rm -f sealed-secret.yaml
   echo "  [-] không có secret nào, bỏ qua sealed-secret.yaml"
 fi
-if [[ -n "$registryUser" && -n "$registryPassword" ]]; then
+if [[ "$Merge" == true && "$Update" != true && -f registry-secret.yaml ]]; then
+  echo "  [=] registry-secret.yaml đã có, giữ nguyên"
+  kustomizationExtras+=(registry-secret.yaml)
+elif [[ -n "$registryUser" && -n "$registryPassword" ]]; then
   echo "Sealing image pull secret..."
   kubectl create secret docker-registry katech-registry \
     --docker-server="${registryServer:-registry.kruzetech.dev}" \
