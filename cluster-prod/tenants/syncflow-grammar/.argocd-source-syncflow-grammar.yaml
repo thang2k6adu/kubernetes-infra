@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/kruzetech-grammar:git-2f7fd101e5bd28565e49332b62138f6304ff2266
+  - registry.kruzetech.dev/kruzetech-grammar:git-ab288559a86514d2f4a4f295c63a33064321f1b8
