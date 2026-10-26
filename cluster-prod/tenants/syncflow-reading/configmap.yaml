@@ -4,7 +4,8 @@ data:
   DATABASE_URL: jdbc:postgresql://prod-syncflow-db.syncflow-db.svc.cluster.local:5432/kruzetech_reading
   DB_USERNAME: kruzetech_reading
   EVENTS_STORE: redis
-  GEMINI_MODEL_LOOKUP: gemini-flash-latest
+  GEMINI_MODEL_LOOKUP: gemini-2.5-flash
+  GEMINI_TIMEOUT_MS: "10000"
   JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
     -Xss512k
   PORT: "3050"
