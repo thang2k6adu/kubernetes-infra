@@ -5,7 +5,7 @@ data:
   DB_USERNAME: kruzetech_writing
   EVENTS_STORE: redis
   GEMINI_MODEL_CHAT: gemini-2.5-flash
-  GEMINI_MODEL_FEEDBACK: gemini-flash-latest
+  GEMINI_MODEL_FEEDBACK: gemini-2.5-flash
   GEMINI_TIMEOUT_MS: "20000"
   GEMINI_FEEDBACK_TIMEOUT_MS: "50000"
   JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -XX:TieredStopAtLevel=1
