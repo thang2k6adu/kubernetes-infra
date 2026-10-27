@@ -9,8 +9,10 @@ data:
     -Xss512k
   PORT: "3020"
   REDIS_HOST: prod-syncflow-redis-master.syncflow-redis.svc.cluster.local
+  READING_SERVICE_URL: http://prod-syncflow-reading.syncflow-reading.svc.cluster.local:3050
   REDIS_PORT: "6379"
   SWAGGER_ENABLED: "true"
+  WRITING_SERVICE_URL: http://prod-syncflow-writing.syncflow-writing.svc.cluster.local:3060
 kind: ConfigMap
 metadata:
   creationTimestamp: null
