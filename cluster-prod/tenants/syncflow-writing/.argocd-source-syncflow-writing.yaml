@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/kruzetech-writing:git-81d7424abf20fd203947255ec73c484bfa516347
+  - registry.kruzetech.dev/kruzetech-writing:git-1bc6fd8ac1fbb05ecc68fe9f998db959f59f9d22
