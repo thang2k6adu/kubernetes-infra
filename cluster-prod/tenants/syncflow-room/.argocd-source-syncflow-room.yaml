@@ -1,3 +1,3 @@
 kustomize:
   images:
-  - registry.kruzetech.dev/kruzetech-room:git-81c963825f721838b03e7bf16ec76c6c20836d72
+  - registry.kruzetech.dev/kruzetech-room:git-58540e3da15227ffdcc97b2e415c007aea96b320
