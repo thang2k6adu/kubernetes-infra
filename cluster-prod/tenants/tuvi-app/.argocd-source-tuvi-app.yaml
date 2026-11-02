@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - registry.kruzetech.dev/tuvi-app:git-3ec6c9d7c525c4824ab5f15816530ad874bcc309
