@@ -10,9 +10,9 @@ data:
   IAM_BASE_URL: http://prod-katech-auth-iam.katech-auth-iam.svc.cluster.local:8080
   KATECH_AUTH_JWT_ISSUER: https://katech-gateway.kruzetech.dev/sso
   PAYMENT_PUBLIC_BASE_URL: https://katech-gateway.kruzetech.dev/payment/api/ewallet
-  RABBITMQ_HOST: 103.172.237.33
+  RABBITMQ_HOST: prod-syncflow-rabbitmq.syncflow-rabbitmq.svc.cluster.local
   RABBITMQ_PORT: "5672"
-  RABBITMQ_USERNAME: invoices
+  RABBITMQ_USERNAME: syncflow
   REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
   REDIS_PORT: "6379"
   SPRING_PROFILES_ACTIVE: prod

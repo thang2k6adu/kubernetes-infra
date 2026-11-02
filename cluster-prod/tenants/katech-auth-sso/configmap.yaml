@@ -21,9 +21,9 @@ data:
   KATECH_CORS_ENABLED: "false"
   KATECH_PLATFORM_CLIENTS_BOOTSTRAP_UI_POST_LOGOUT_URIS: https://katech-admin-ui.kruzetech.dev/,http://localhost:5174/,http://localhost:5174/logged-out
   KATECH_PLATFORM_CLIENTS_BOOTSTRAP_UI_REDIRECT_URIS: https://katech-admin-ui.kruzetech.dev/auth/callback,http://localhost:5174/auth/callback
-  RABBITMQ_HOST: 103.172.237.33
+  RABBITMQ_HOST: prod-syncflow-rabbitmq.syncflow-rabbitmq.svc.cluster.local
   RABBITMQ_PORT: "5672"
-  RABBITMQ_USERNAME: invoices
+  RABBITMQ_USERNAME: syncflow
   SERVER_PORT: "8080"
   SPRING_DATA_REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
   SPRING_DATA_REDIS_PORT: "6379"
