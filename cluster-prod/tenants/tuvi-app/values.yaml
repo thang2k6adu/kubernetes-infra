@@ -1,0 +1,130 @@
+image:
+  repository: registry.kruzetech.dev/tuvi-app
+  pullPolicy: IfNotPresent
+  tag: "git-3ec6c9d7c525c4824ab5f15816530ad874bcc309"
+
+imagePullSecrets:
+  - name: katech-registry
+
+nameOverride: "tuvi-app"
+fullnameOverride: ""
+
+replicaCount: 1
+
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: tuvi.kruzetech.dev
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "192Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+# Lúc khởi động app chạy 'prisma db push' (thử lại tới ~90s nếu DB chưa sẵn sàng) rồi mới mở cổng,
+# nên liveness phải chờ lâu hơn readiness.
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 3000
+  initialDelaySeconds: 60
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 3000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 18
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+envFrom:
+  - configMapRef:
+      name: tuvi-app-config
+  - secretRef:
+      name: tuvi-app-secret
+
+configMap:
+  enabled: false
+  data: {}
+
+secrets:
+  enabled: false
+  data: {}
+
+volumes:
+  - name: next-cache
+    emptyDir: {}
+  - name: tmp
+    emptyDir: {}
+
+volumeMounts:
+  - name: next-cache
+    mountPath: /app/.next/cache
+  - name: tmp
+    mountPath: /tmp
+
+persistence:
+  enabled: false
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+httpRoute:
+  enabled: false

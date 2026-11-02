@@ -1,0 +1,50 @@
+global:
+  postgresql:
+    auth:
+      existingSecret: "tuvi-db-secret"
+      secretKeys:
+        adminPasswordKey: "POSTGRES_PASSWORD"
+        userPasswordKey: "PASSWORD"
+        replicationPasswordKey: "REPLICATION_PASSWORD"
+        metricsPasswordKey: "METRICS_PASSWORD"
+
+image:
+  registry: docker.io
+  repository: bitnami/postgresql
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: "tuvi-db"
+architecture: standalone
+
+auth:
+  username: tuvi
+  database: tuvi
+  existingSecret: "tuvi-db-secret"
+  secretKeys:
+    adminPasswordKey: "POSTGRES_PASSWORD"
+    userPasswordKey: "PASSWORD"
+    replicationPasswordKey: "REPLICATION_PASSWORD"
+    metricsPasswordKey: "METRICS_PASSWORD"
+
+primary:
+  resourcesPreset: "none"
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 384Mi
+  persistence:
+    enabled: true
+    storageClass: "local-path-retain"
+    accessModes:
+      - ReadWriteOnce
+    size: 2Gi
+
+metrics:
+  enabled: false
+
+backup:
+  enabled: false
