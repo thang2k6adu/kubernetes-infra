@@ -1,0 +1,103 @@
+# Helm values cho katech-notification (chart backend-service-chart)
+
+image:
+  repository: registry.kruzetech.dev/katech-notification
+  # tag 'dev' là mutable -> phải Always, không thì redeploy không kéo image mới
+  pullPolicy: Always
+  tag: "git-d7f6b46cef00a5e6dbd61c6a9b1634a7fdbcdfaa"
+imagePullSecrets:
+  - name: katech-registry
+nameOverride: "katech-notification"
+fullnameOverride: ""
+replicaCount: 1
+strategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxSurge: 1
+    maxUnavailable: 0
+serviceAccount:
+  create: true
+  automount: false
+  annotations: {}
+  name: ""
+podAnnotations: {}
+podLabels: {}
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  fsGroup: 1001
+  seccompProfile:
+    type: RuntimeDefault
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1001
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+service:
+  type: ClusterIP
+  port: 8230
+  targetPort: 8230
+  annotations: {}
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts: []
+resources:
+  requests:
+    cpu: "200m"
+    memory: "384Mi"
+  limits:
+    cpu: "1"
+    memory: "1Gi"
+# Đường health lấy đúng từ HEALTHCHECK trong Dockerfile của service.
+livenessProbe:
+  httpGet:
+    path: /actuator/health
+    port: 8230
+  initialDelaySeconds: 60
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 6
+readinessProbe:
+  httpGet:
+    path: /actuator/health
+    port: 8230
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+autoscaling:
+  enabled: false
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+envFrom:
+  - configMapRef:
+      name: katech-notification-config
+  - secretRef:
+      name: katech-notification-secret
+configMap:
+  enabled: false
+  data: {}
+secrets:
+  enabled: false
+  data: {}
+# readOnlyRootFilesystem: true nên JVM cần /tmp ghi được (Tomcat temp dir).
+volumes:
+  - name: tmp
+    emptyDir: {}
+volumeMounts:
+  - name: tmp
+    mountPath: /tmp
+persistence:
+  enabled: false
+nodeSelector: {}
+tolerations: []
+affinity: {}
+httpRoute:
+  enabled: false

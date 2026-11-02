@@ -1,0 +1,27 @@
+apiVersion: v1
+data:
+  ENTITLEMENT_URL: http://prod-katech-entitlement.katech-entitlement.svc.cluster.local:8250
+  GATEWAY_AUTHZ_ENABLED: "true"
+  GATEWAY_CORS_EXTRA_ORIGINS: https://katech-admin-ui.kruzetech.dev,https://katech-storefront.kruzetech.dev
+  GATEWAY_REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
+  GATEWAY_REDIS_PORT: "6379"
+  IAM_BASE_URL: http://prod-katech-auth-iam.katech-auth-iam.svc.cluster.local:8080
+  IAM_URL: http://prod-katech-auth-iam.katech-auth-iam.svc.cluster.local:8080
+  INVOICE_URL: http://prod-katech-invoice.katech-invoice.svc.cluster.local:8220
+  KATECH_GATEWAY_CLIENT_ID: gateway-m2m
+  NOTIFICATION_URL: http://prod-katech-notification.katech-notification.svc.cluster.local:8230
+  PAYMENT_URL: http://prod-katech-payment.katech-payment.svc.cluster.local:8210
+  RABBITMQ_HOST: 103.172.237.33
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: invoices
+  SERVER_PORT: "8080"
+  SPRING_DATA_REDIS_HOST: prod-katech-redis-master.katech-redis.svc.cluster.local
+  SPRING_DATA_REDIS_PORT: "6379"
+  SPRING_PROFILES_ACTIVE: prod
+  SSO_URL: http://prod-katech-auth-sso.katech-auth-sso.svc.cluster.local:8080
+  SUBSCRIPTIONS_URL: http://prod-katech-subscriptions.katech-subscriptions.svc.cluster.local:8240
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: katech-auth-gateway-config
+  namespace: katech-auth-gateway
